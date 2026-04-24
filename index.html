@@ -1,0 +1,2003 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- <base target="_top"> は GitHub Pages では削除 -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>スグロク 議事録支援システム v2.0</title>
+
+  <!-- Google Sign-In (GIS) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- App Settings -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="スグロク 議事録支援システム">
+  <meta name="application-name" content="スグロク 議事録支援システム">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#e74c3c">
+
+  <!-- アイコン: 赤色 -->
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23e74c3c'/%3E%3Ctext x='50' y='70' font-size='60' text-anchor='middle' fill='white'%3E%F0%9F%8E%99%EF%B8%8F%3C/text%3E%3C/svg%3E">
+  <link rel="apple-touch-icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23e74c3c'/%3E%3Ctext x='50' y='70' font-size='60' text-anchor='middle' fill='white'%3E%F0%9F%8E%99%EF%B8%8F%3C/text%3E%3C/svg%3E">
+
+  <style>
+    /* --- Theme Definitions with CSS Variables --- */
+    :root {
+      --primary-color: #27ae60;
+      --accent-color: #c0392b;
+      --bg-color: #f4f4f4;
+      --text-color: #333;
+      --panel-bg: white;
+      --border-radius: 12px;
+    }
+
+    body.theme-division {
+      --primary-color: #2c3e50;
+      --accent-color: #8e44ad;
+      --bg-color: #dfe6e9;
+      --panel-bg: #fdfefe;
+    }
+
+    body.theme-department {
+      --primary-color: #ba4a00;
+      --accent-color: #d35400;
+      --bg-color: #fcefe6;
+      --panel-bg: #ffffff;
+    }
+
+    body.theme-general {
+      --primary-color: #00796b;
+      --accent-color: #00acc1;
+      --bg-color: #e0f7fa;
+      --panel-bg: #ffffff;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 15px;
+      background: var(--bg-color);
+      color: var(--text-color);
+      transition: background 0.5s ease;
+      margin: 0;
+    }
+
+    .container {
+      background: var(--panel-bg);
+      padding: 20px;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      margin: 0 auto;
+      border-top: 5px solid var(--primary-color);
+      transition: border-top 0.5s ease;
+    }
+
+    h3 {
+      margin-top: 0;
+      color: var(--accent-color);
+      text-align: center;
+      font-size: 1.2em;
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid #ddd;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      font-weight: bold;
+      color: #7f8c8d;
+      border-bottom: 2px solid transparent;
+      transition: color 0.3s;
+    }
+
+    .tab.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+    }
+
+    .mode-content {
+      display: none;
+    }
+
+    .mode-content.active {
+      display: block;
+    }
+
+    .control-panel {
+      padding: 15px;
+      background: #fdfefe;
+      border: 1px solid #bdc3c7;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: var(--primary-color);
+      font-size: 0.9em;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      resize: vertical;
+      background: #fafafa;
+    }
+
+    .file-upload-wrapper {
+      margin: 10px 0;
+    }
+
+    .pdf-note {
+      font-size: 0.8em;
+      color: var(--accent-color);
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid var(--accent-color);
+      padding: 5px;
+      border-radius: 4px;
+      margin-bottom: 5px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      color: white;
+      transition: 0.2s;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #createBtn {
+      background: #3498db;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    #startBtn {
+      background: var(--accent-color);
+    }
+
+    #splitBtn {
+      background: var(--primary-color);
+    }
+
+    #stopBtn {
+      background: #7f8c8d;
+    }
+
+    /* v3.0.0: 休憩対応 2モード併設 */
+    #pauseBtn {
+      background: #f39c12;
+    }
+
+    #breakBtn {
+      background: #16a085;
+    }
+
+    #recResumeBtn {
+      background: var(--accent-color);
+    }
+
+    /* v3.0.0: ジョブステータスパネル */
+    #job-status-panel {
+      background: #fef9e7;
+      border: 1px solid #f4d03f;
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-top: 8px;
+      font-size: 0.85em;
+      line-height: 1.5;
+      display: none;
+    }
+    #job-status-panel.visible {
+      display: block;
+    }
+    #job-status-panel .js-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    #job-status-panel .js-pending  { color: #b7950b; font-weight: bold; }
+    #job-status-panel .js-done     { color: #196f3d; }
+    #job-status-panel .js-failed   { color: #c0392b; font-weight: bold; }
+
+    /* v3.0.0: 状態バッジ */
+    .state-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.75em;
+      font-weight: bold;
+      margin-left: 8px;
+    }
+    .state-recording { background: #e74c3c; color: #fff; }
+    .state-paused    { background: #f39c12; color: #fff; }
+    .state-waiting   { background: #16a085; color: #fff; }
+    .state-idle      { background: #95a5a6; color: #fff; }
+
+    #analyzeBtn {
+      background: var(--primary-color);
+      width: 100%;
+    }
+
+    .status-panel {
+      background: #ecf0f1;
+      padding: 10px;
+      border-radius: 8px;
+      border-left: 5px solid var(--primary-color);
+    }
+
+    #upload-log {
+      font-size: 0.85em;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-top: 10px;
+      border-top: 1px solid #ddd;
+      padding-top: 5px;
+    }
+
+    .log-success { color: green; }
+    .log-error   { color: red; }
+
+    .file-link {
+      margin-top: 5px;
+      padding: 8px;
+      background: #e8f6f3;
+      border: 1px solid #a2d9ce;
+      border-radius: 4px;
+      display: block;
+      font-size: 0.9em;
+    }
+
+    .file-link a {
+      color: #16a085;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .install-guide {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .install-btn {
+      background: none;
+      border: 1px solid #95a5a6;
+      color: #7f8c8d;
+      padding: 5px 10px;
+      font-size: 0.8em;
+      border-radius: 15px;
+    }
+
+    #installModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 80%;
+    }
+
+    #checklist-container {
+      display: none;
+      background: #e0f7fa;
+      border: 1px solid #00acc1;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 15px;
+    }
+
+    #checklist-container h4 {
+      margin: 0 0 10px 0;
+      color: #00796b;
+      font-size: 1em;
+      border-bottom: 1px dashed #00acc1;
+      padding-bottom: 5px;
+    }
+
+    .checklist-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+    }
+
+    .check-item {
+      font-size: 0.85em;
+      color: #00695c;
+      display: flex;
+      align-items: center;
+    }
+
+    .check-item input {
+      margin-right: 5px;
+      accent-color: #00796b;
+    }
+
+    /* Loading Overlay */
+    #loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.85);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 10px;
+    }
+
+    @keyframes spin {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      color: var(--primary-color);
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+
+    /* =============================
+       録音中警告バナー
+       ============================= */
+    #rec-warning-banner {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: #e74c3c;
+      color: white;
+      text-align: center;
+      padding: 10px 16px;
+      font-weight: bold;
+      font-size: 0.9em;
+      z-index: 9500;
+      letter-spacing: 0.04em;
+      animation: rec-blink 2.5s ease-in-out infinite;
+    }
+
+    @keyframes rec-blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.7; }
+    }
+
+    /* =============================
+       ログイン画面
+       ============================= */
+    #login-screen {
+      display: flex;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #f4f4f4;
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .login-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      padding: 36px 28px;
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+      border-top: 5px solid #c0392b;
+    }
+
+    .login-icon {
+      font-size: 3em;
+      margin-bottom: 8px;
+    }
+
+    .login-title {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #2c3e50;
+      margin: 0 0 4px;
+    }
+
+    .login-subtitle {
+      font-size: 0.85em;
+      color: #7f8c8d;
+      margin: 0 0 24px;
+    }
+
+    #google-signin-btn {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    #login-error {
+      display: none;
+      background: #fdecea;
+      border: 1px solid #e74c3c;
+      color: #c0392b;
+      font-size: 0.8em;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-top: 8px;
+    }
+
+    .login-domains {
+      font-size: 0.75em;
+      color: #95a5a6;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- 録音中警告バナー（録音開始で表示） -->
+  <div id="rec-warning-banner">
+    🔴 録音中 — このタブを閉じないでください &nbsp;|&nbsp; 終了する場合は「⏹️ 終了」ボタンを押してください
+  </div>
+
+  <!-- ========== ログイン画面 ========== -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-icon">🎙️</div>
+      <p class="login-title">スグロク</p>
+      <p class="login-subtitle">社内Googleアカウントでログインしてください</p>
+      <div id="google-signin-btn"></div>
+      <div id="login-error"></div>
+      <p class="login-domains">対応ドメイン: jaz-acoop.co.jp / acoop1.jp / acoop2.jp / acoop3.jp</p>
+    </div>
+  </div>
+
+  <!-- ========== メインアプリ（ログイン後に表示） ========== -->
+  <div id="main-app" style="display:none">
+    <div class="container">
+      <h3 id="app-title">🔴 【店長会議】スグロク</h3>
+      <div class="install-guide">
+        <button class="install-btn" onclick="openModal()">📲 アプリ保存方法</button>
+        <div style="font-size: 0.7em; color: #95a5a6; margin-top: 5px;">
+          System Version: v2.0.0 (Embedded Manual)
+          <span id="login-user-display" style="margin-left:8px; color:#27ae60;"></span>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('record')">🔴 録音モード</div>
+        <div class="tab" onclick="switchTab('analyze')">📝 議事録アーカイブ分析</div>
+        <div class="tab" onclick="switchTab('manual')">📘 使い方</div>
+      </div>
+
+      <!-- Mode 1: Recording -->
+      <div id="mode-record" class="mode-content active">
+        <div class="input-group">
+          <label for="meeting-type-select">会議の種類:</label>
+          <select id="meeting-type-select" onchange="updateTheme(this.value)"
+            style="width:100%; padding:8px; margin-bottom:10px; border-radius:4px; border:1px solid #ddd;">
+            <option value="store_manager">店長会議</option>
+            <option value="division">店舗事業部会議</option>
+            <option value="department">部門担当者会議</option>
+            <option value="general">汎用打合せ</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label for="agenda-input-record">本日の次第 (任意):</label>
+          <div class="file-upload-wrapper">
+            <input type="file" id="agenda-file-record" accept=".pdf,.docx,.xlsx">
+            <span id="agenda-status-record"></span>
+          </div>
+          <div class="pdf-note">⚠️ 今日の会議の次第を読み込むと、AIが担当者や議題を正確に認識します。</div>
+          <textarea id="agenda-input-record" placeholder="ここに本日の次第が表示されます..."></textarea>
+
+          <div class="btn-group">
+            <button id="createBtn" style="flex:2">📄 ① ファイル新規作成</button>
+            <button id="resumeBtn" style="background:#f39c12; flex:1">🔄 続きから再開</button>
+          </div>
+
+          <div id="current-doc-info"
+            style="margin-top:10px; font-size:0.8em; color:#2c3e50; font-weight:bold; display:none;">
+            📍 記録先: <span id="doc-name-display">未設定</span>
+          </div>
+
+          <div id="links-container">
+            <div class="file-link"><span style="color:#555">📝:</span> <a id="min-link" target="_blank">準備中...</a></div>
+          </div>
+
+          <!-- Checklist UI -->
+          <div id="checklist-container">
+            <h4>✅ 聞き取りフレームワーク (AI判定)</h4>
+            <div class="checklist-grid">
+              <div class="check-item"><input type="checkbox" id="chk-goal" disabled> 冒頭: ゴールの確認</div>
+              <div class="check-item"><input type="checkbox" id="chk-status" disabled> 冒頭: 前回ステータス</div>
+              <div class="check-item"><input type="checkbox" id="chk-proscons" disabled> 中盤: メリット/デメリット</div>
+              <div class="check-item"><input type="checkbox" id="chk-constraints" disabled> 中盤: 制約条件・コスト</div>
+              <div class="check-item"><input type="checkbox" id="chk-decision" disabled> 中盤: 意思決定者の発言</div>
+              <div class="check-item"><input type="checkbox" id="chk-schedule" disabled> 終盤: 次回日程</div>
+              <div class="check-item"><input type="checkbox" id="chk-deadline" disabled> 終盤: 期限・条件</div>
+              <div class="check-item"><input type="checkbox" id="chk-concrete" disabled> 終盤: 具体化(5W1H)</div>
+            </div>
+          </div>
+
+          <!-- v3.0.0: 状態バッジ -->
+          <div style="text-align:center; margin-bottom:6px; font-size:0.9em;">
+            状態: <span id="state-badge" class="state-badge state-idle">待機中</span>
+          </div>
+
+          <!-- v3.0.0: RECORDING 時に表示するボタン群 -->
+          <div id="btn-group-recording" class="btn-group" style="display:none;">
+            <button id="pauseBtn" type="button">⏸ 一時停止</button>
+            <button id="splitBtn" type="button">♻️ 区切る</button>
+            <button id="breakBtn" type="button">📥 区切って休憩</button>
+            <button id="stopBtn" type="button">⏹️ 終了</button>
+          </div>
+
+          <!-- v3.0.0: PAUSED 時に表示するボタン群 -->
+          <div id="btn-group-paused" class="btn-group" style="display:none;">
+            <button id="recResumeBtn" type="button">▶️ 再開</button>
+            <button id="stopBtnPaused" type="button" style="background:#7f8c8d;">⏹️ 終了</button>
+          </div>
+
+          <!-- v3.0.0: WAITING（区切って休憩中）時に表示するボタン群 -->
+          <div id="btn-group-waiting" class="btn-group" style="display:none;">
+            <button id="restartBtn" type="button">🔴 録音再開（次のPart）</button>
+            <button id="stopBtnWaiting" type="button" style="background:#7f8c8d;">⏹️ 終了</button>
+          </div>
+
+          <!-- v3.0.0: IDLE 時の初期ボタン -->
+          <div id="btn-group-idle" class="btn-group">
+            <button id="startBtn" type="button">🔴 録音開始</button>
+          </div>
+
+          <!-- v3.0.0: 休憩中の補足表示 -->
+          <div id="pause-info" style="display:none; background:#fef5e7; padding:8px 10px; border-radius:6px; font-size:0.85em; color:#9c640c; margin-top:4px;">
+            ⏸ 休憩中（一時停止）。30分を超えると自動的に「区切って休憩」モードへ切り替わり、マイクを解放します。
+          </div>
+          <div id="break-info" style="display:none; background:#e8f8f5; padding:8px 10px; border-radius:6px; font-size:0.85em; color:#117a65; margin-top:4px;">
+            ☕ 休憩中（区切って休憩）。直前のPartはバックグラウンドで要約生成中です。マイクは解放されています。
+          </div>
+
+          <!-- v3.0.0: ジョブステータスパネル -->
+          <div id="job-status-panel">
+            <div class="js-row"><span>📥 未処理:</span><span class="js-pending" id="js-pending">0</span></div>
+            <div class="js-row"><span>✅ 完了:</span><span class="js-done" id="js-done">0</span></div>
+            <div class="js-row"><span>❌ 失敗:</span><span class="js-failed" id="js-failed">0</span></div>
+            <div class="js-row"><span>🔄 マージ回数:</span><span id="js-merge">0</span></div>
+          </div>
+
+          <!-- セッション切れ救済: 新しいタブでログインし直し、現在の議事録ID・次第・次のパート番号を引き継いで続行する -->
+          <div style="margin-top:8px;">
+            <button id="handoffBtn" type="button" disabled
+              style="width:100%; background:#16a085; color:#fff; border:none; border-radius:6px; padding:8px; font-size:0.9em; cursor:pointer;">
+              🆕 新しいタブで続行（セッション切れ時の救済）
+            </button>
+            <div style="font-size:0.75em; color:#7f8c8d; margin-top:4px; line-height:1.4;">
+              ※ 現在の議事録・次第・次のパート番号を新タブに引き継ぎ、別アカウント状態で継続録音できます。
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mode 2: Past Analysis -->
+      <div id="mode-analyze" class="mode-content">
+        <div class="control-panel" style="border-color: #8e44ad;">
+          <label style="color: #8e44ad;">📂 ① 分析する過去の議事録</label>
+          <div class="pdf-note" style="color:#8e44ad; background:#f5eef8; border-color:#e8daef;">
+            分析したい過去の議事録ファイル(Word等)をアップロードしてください。<br>
+            <strong id="analysis-description">店長会議向けに「実行」と「期限」を厳しくチェックします。</strong>
+          </div>
+          <div class="file-upload-wrapper">
+            <input type="file" id="past-file" accept=".pdf,.docx,.txt">
+          </div>
+          <textarea id="past-text" placeholder="ここに議事録のテキストを貼り付けることも可能です..."
+            style="height: 100px; display:none;"></textarea>
+
+          <hr style="border: 0; border-top: 1px dashed #bdc3c7; margin: 15px 0;">
+
+          <label style="color: #2980b9;">📋 ② 当時の次第 (参照用・任意)</label>
+          <div class="pdf-note" style="color:#2980b9; background:#eaf2f8; border-color:#d6eaf8;">
+            当時の「次第」もあれば、正確な比較分析が可能です。
+          </div>
+          <div class="file-upload-wrapper">
+            <input type="file" id="agenda-file-analyze" accept=".pdf,.docx,.xlsx">
+            <span id="agenda-status-analyze"></span>
+          </div>
+          <textarea id="agenda-input-analyze" placeholder="ここに当時の次第が表示されます..."></textarea>
+
+          <button id="analyzeBtn" onclick="runAnalysis()" style="margin-top:15px;">⚡ 分析してレポート作成</button>
+
+          <div id="analyze-link-container" class="file-link" style="background:#f5eef8; border-color:#d7bde2;">
+            <span style="color:#8e44ad">📊 レポート:</span>
+            <a id="analyzed-link" target="_blank" style="color:#8e44ad">作成待ち...</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mode 3: Manual Page Launcher -->
+      <div id="mode-manual" class="mode-content">
+        <div class="control-panel" style="border-color:#3498db; text-align:center;">
+          <label style="color:#2980b9; text-align:left;">📘 スグロク ユーザーマニュアル</label>
+          <div class="pdf-note" style="color:#2980b9; background:#eaf2f8; border-color:#d6eaf8; text-align:left;">
+            マニュアルはアプリ内データから別ページ表示します（外部リンクではありません）。
+          </div>
+          <button id="openManualBtn" style="background:#2980b9; max-width:320px; margin:10px auto 0; display:block;">📘 マニュアルを別ページで開く</button>
+        </div>
+      </div>
+
+      <div class="status-panel">
+        <div id="timer-display" style="text-align:center; font-family:monospace; font-size:1.2em; margin-bottom:5px;">--:--</div>
+        <div id="upload-log"></div>
+      </div>
+    </div><!-- /.container -->
+  </div><!-- /#main-app -->
+
+  <!-- Loading Overlay (fixed, always available) -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loading-msg">AIが解析中...</div>
+  </div>
+
+  <!-- Install Modal -->
+  <div id="installModal">
+    <div class="modal-content">
+      <span style="float:right; cursor:pointer; font-size:1.5em;" onclick="closeModal()">&times;</span>
+      <h4>📱 ホーム画面追加</h4>
+      <p><strong>iPhone:</strong> 共有アイコン <span style="font-size:1.2em">↥</span> →「ホーム画面に追加」</p>
+      <p><strong>Android:</strong> メニュー「︙」→「ホーム画面に追加」</p>
+      <p><strong>PC:</strong> メニュー「︙」→「保存して共有」→「ショートカット作成」</p>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    //  CONFIG  ★ここを環境に合わせて書き換えてください
+    // ============================================================
+    const CONFIG = {
+      // GASデプロイURL（「全員公開」でデプロイしたURL）
+      GAS_URL: 'https://script.google.com/macros/s/AKfycbydBkzoR31d29w7pGAGnVtcNidH_t02Xcz-4s1qPOcS0dlyTsqFk8TGE-EpyXS4wR0B/exec',
+      // Google Cloud Console の OAuthクライアントID
+      // ※ https://acoop-ai.github.io は承認済みJavaScript生成元に登録済み
+      GOOGLE_CLIENT_ID: '1072945615483-74jadmaet56chvhkfh2cpt4ae9dvh140.apps.googleusercontent.com',
+      // 許可するGoogleワークスペースドメイン
+      ALLOWED_DOMAINS: ['jaz-acoop.co.jp', 'acoop1.jp', 'acoop2.jp', 'acoop3.jp']
+    };
+
+    // ============================================================
+    //  グローバル状態
+    // ============================================================
+    let currentIdToken = null;
+    let currentUser    = null;
+
+    const EMBEDDED_MANUAL_B64 = 'PCFET0NUWVBFIGh0bWw+DQo8aHRtbCBsYW5nPSJqYSI+DQo8aGVhZD4NCiAgICA8bWV0YSBjaGFyc2V0PSJVVEYtOCI+DQogICAgPG1ldGEgbmFtZT0idmlld3BvcnQiIGNvbnRlbnQ9IndpZHRoPWRldmljZS13aWR0aCwgaW5pdGlhbC1zY2FsZT0xLjAiPg0KICAgIDx0aXRsZT7jgrnjgrDjg63jgq8g44Om44O844K244O844Oe44OL44Ol44Ki44OrPC90aXRsZT4NCiAgICA8c2NyaXB0IHNyYz0iaHR0cHM6Ly9jZG4udGFpbHdpbmRjc3MuY29tIj48L3NjcmlwdD4NCiAgICA8bGluayByZWw9InN0eWxlc2hlZXQiIGhyZWY9Imh0dHBzOi8vY2RuanMuY2xvdWRmbGFyZS5jb20vYWpheC9saWJzL2ZvbnQtYXdlc29tZS82LjQuMC9jc3MvYWxsLm1pbi5jc3MiPg0KICAgIDxzdHlsZT4NCiAgICAgICAgQGltcG9ydCB1cmwoJ2h0dHBzOi8vZm9udHMuZ29vZ2xlYXBpcy5jb20vY3NzMj9mYW1pbHk9Tm90bytTYW5zK0pQOndnaHRANDAwOzUwMDs3MDAmZGlzcGxheT1zd2FwJyk7DQogICAgICAgIA0KICAgICAgICBib2R5IHsNCiAgICAgICAgICAgIGZvbnQtZmFtaWx5OiAnTm90byBTYW5zIEpQJywgc2Fucy1zZXJpZjsNCiAgICAgICAgICAgIGJhY2tncm91bmQtY29sb3I6ICNmOGZhZmM7DQogICAgICAgICAgICBjb2xvcjogIzFlMjkzYjsNCiAgICAgICAgfQ0KICAgICAgICAuaGVyby1ncmFkaWVudCB7DQogICAgICAgICAgICBiYWNrZ3JvdW5kOiBsaW5lYXItZ3JhZGllbnQoMTM1ZGVnLCAjMWU0MGFmIDAlLCAjM2I4MmY2IDEwMCUpOw0KICAgICAgICB9DQogICAgICAgIC5jYXJkIHsNCiAgICAgICAgICAgIGJhY2tncm91bmQ6IHdoaXRlOw0KICAgICAgICAgICAgYm9yZGVyLXJhZGl1czogMTJweDsNCiAgICAgICAgICAgIGJveC1zaGFkb3c6IDAgNHB4IDZweCAtMXB4IHJnYmEoMCwgMCwgMCwgMC4xKTsNCiAgICAgICAgICAgIHRyYW5zaXRpb246IHRyYW5zZm9ybSAwLjJzOw0KICAgICAgICB9DQogICAgICAgIC5zdGVwLW51bWJlciB7DQogICAgICAgICAgICB3aWR0aDogMzJweDsNCiAgICAgICAgICAgIGhlaWdodDogMzJweDsNCiAgICAgICAgICAgIGJhY2tncm91bmQtY29sb3I6ICMzYjgyZjY7DQogICAgICAgICAgICBjb2xvcjogd2hpdGU7DQogICAgICAgICAgICBib3JkZXItcmFkaXVzOiA1MCU7DQogICAgICAgICAgICBkaXNwbGF5OiBmbGV4Ow0KICAgICAgICAgICAgYWxpZ24taXRlbXM6IGNlbnRlcjsNCiAgICAgICAgICAgIGp1c3RpZnktY29udGVudDogY2VudGVyOw0KICAgICAgICAgICAgZm9udC13ZWlnaHQ6IGJvbGQ7DQogICAgICAgICAgICBmbGV4LXNocmluazogMDsNCiAgICAgICAgfQ0KICAgICAgICAubW9kZS1iYWRnZSB7DQogICAgICAgICAgICBkaXNwbGF5OiBpbmxpbmUtYmxvY2s7DQogICAgICAgICAgICBwYWRkaW5nOiAycHggMTJweDsNCiAgICAgICAgICAgIGJvcmRlci1yYWRpdXM6IDk5OTlweDsNCiAgICAgICAgICAgIGZvbnQtc2l6ZTogMC44NzVyZW07DQogICAgICAgICAgICBmb250LXdlaWdodDogNjAwOw0KICAgICAgICB9DQogICAgICAgIC5iZy1taW51dGVzLWJsdWUgeyBiYWNrZ3JvdW5kLWNvbG9yOiAjZGJlYWZlOyBib3JkZXItbGVmdDogNHB4IHNvbGlkICMzYjgyZjY7IH0NCiAgICAgICAgLmJnLW1pbnV0ZXMteWVsbG93IHsgYmFja2dyb3VuZC1jb2xvcjogI2ZlZjljMzsgYm9yZGVyLWxlZnQ6IDRweCBzb2xpZCAjZWFiMzA4OyB9DQogICAgICAgIC5iZy1taW51dGVzLXJlZC1saWdodCB7IGJhY2tncm91bmQtY29sb3I6ICNmZWUyZTI7IGJvcmRlci1sZWZ0OiA0cHggc29saWQgI2VmNDQ0NDsgfQ0KICAgICAgICAuYmctbWludXRlcy1yZWQtZGFyayB7IGJhY2tncm91bmQtY29sb3I6ICNmY2E1YTU7IGJvcmRlci1sZWZ0OiA0cHggc29saWQgI2I5MWMxYzsgfQ0KICAgICAgICAuYmctbWludXRlcy1ibHVlLWRhcmsgeyBiYWNrZ3JvdW5kLWNvbG9yOiAjMWUzYThhOyBjb2xvcjogd2hpdGU7IGJvcmRlci1sZWZ0OiA0cHggc29saWQgIzFlNDBhZjsgfQ0KICAgIDwvc3R5bGU+DQo8L2hlYWQ+DQo8Ym9keSBjbGFzcz0icGItMTIiPg0KDQogICAgPCEtLSBIZWFkZXIgLS0+DQogICAgPGhlYWRlciBjbGFzcz0iaGVyby1ncmFkaWVudCB0ZXh0LXdoaXRlIHB5LTEyIHB4LTYgc2hhZG93LWxnIG1iLTgiPg0KICAgICAgICA8ZGl2IGNsYXNzPSJtYXgtdy00eGwgbXgtYXV0byI+DQogICAgICAgICAgICA8aDEgY2xhc3M9InRleHQtM3hsIG1kOnRleHQtNHhsIGZvbnQtYm9sZCBtYi00Ij4NCiAgICAgICAgICAgICAgICA8aSBjbGFzcz0iZmFzIGZhLWZpbGUtc2lnbmF0dXJlIG1yLTMiPjwvaT7jgrnjgrDjg63jgq8g44Om44O844K244O844Oe44OL44Ol44Ki44OrDQogICAgICAgICAgICA8L2gxPg0KICAgICAgICAgICAgPHAgY2xhc3M9InRleHQtbGcgb3BhY2l0eS05MCBsZWFkaW5nLXJlbGF4ZWQiPg0KICAgICAgICAgICAgICAgIOWNmOOBquOCi+iomOmMsuOChOaDheWgseWFseacieOBruaZguS7o+OBr+e1guOCj+OCiuOAgTxzdHJvbmc+UERDQeOCteOCpOOCr+ODq+OCkuWKoOmAn+OBleOBm+OCi+OBn+OCgeOBq+OAjOaUu+OCgeOBruitsOS6i+mMsua0u+eUqOOAjeOCkuebruaMh+OBmTwvc3Ryb25nPuOAgg0KICAgICAgICAgICAgICAgIOWOs+OBl+OBhOe1jOWWtuOCs+ODs+OCteODq+OCv+ODs+ODiOOBruimlueCueOCkuS8muitsOOBq+aMgeOBoei+vOOBv+OAgeaxuuWumuS6i+mgheOBqOOCouOCr+OCt+ODp+ODs+OCkuaYjueiuuWMluOBl+OBvuOBmeOAgg0KICAgICAgICAgICAgPC9wPg0KICAgICAgICA8L2Rpdj4NCiAgICA8L2hlYWRlcj4NCg0KICAgIDxtYWluIGNsYXNzPSJtYXgtdy00eGwgbXgtYXV0byBweC00Ij4NCiAgICAgICAgDQogICAgICAgIDwhLS0gMDEgSW50cm9kdWN0aW9uIC0tPg0KICAgICAgICA8c2VjdGlvbiBjbGFzcz0ibWItMTIiPg0KICAgICAgICAgICAgPGgyIGNsYXNzPSJ0ZXh0LTJ4bCBmb250LWJvbGQgbWItNiBib3JkZXItYi0yIGJvcmRlci1ibHVlLTUwMCBwYi0yIj4NCiAgICAgICAgICAgICAgICA8aSBjbGFzcz0iZmFzIGZhLWluZm8tY2lyY2xlIHRleHQtYmx1ZS02MDAgbXItMiI+PC9pPjEuIOOBr+OBmOOCgeOBqw0KICAgICAgICAgICAgPC9oMj4NCiAgICAgICAgICAgIDxkaXYgY2xhc3M9ImNhcmQgcC02IGxlYWRpbmctcmVsYXhlZCI+DQogICAgICAgICAgICAgICAgPHAgY2xhc3M9Im1iLTQgdGV4dC1ncmF5LTcwMCI+DQogICAgICAgICAgICAgICAgICAgIOOBk+OBruOCt+OCueODhuODoOOBr+OAgUFJ44GM5Lya6K2w6Z+z5aOw44KS6Kej5p6Q44GX44CB6Ieq5YuV44Gn6K2w5LqL6Yyy44KS5L2c5oiQ44GZ44KL44Gg44GR44Gn44Gq44GP44CB57WM5Za244Kz44Oz44K144Or44K/44Oz44OI44Gu6KaW54K544Gn5Yqp6KiA44KE5re75YmK44KS6KGM44GG44Ki44OX44Oq44Kx44O844K344On44Oz44Gn44GZ44CCDQogICAgICAgICAgICAgICAgPC9wPg0KICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9ImdyaWQgbWQ6Z3JpZC1jb2xzLTIgZ2FwLTQgbXQtNCI+DQogICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9ImJnLWJsdWUtNTAgcC00IHJvdW5kZWQtbGcgYm9yZGVyIGJvcmRlci1ibHVlLTEwMCI+DQogICAgICAgICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzcz0iZm9udC1ib2xkIHRleHQtYmx1ZS04MDAiPuKXjyDoqJjpjLLjg7vlhbHmnInjgYvjgonjgIzlrp/ooYzjgI3jgbg8L3NwYW4+DQogICAgICAgICAgICAgICAgICAgICAgICA8cCBjbGFzcz0idGV4dC1zbSB0ZXh0LWdyYXktNjAwIG10LTEiPuaxuuWumuS6i+mgheOBqOOAjOOChOOCi+OBueOBjeOBk+OBqOOAjeOCkuiHquWLleaKveWHuuOBl+OAgeaUvue9ruOCkuioseOBl+OBvuOBm+OCk+OAgjwvcD4NCiAgICAgICAgICAgICAgICAgICAgPC9kaXY+DQogICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9ImJnLWluZGlnby01MCBwLTQgcm91bmRlZC1sZyBib3JkZXIgYm9yZGVyLWluZGlnby0xMDAiPg0KICAgICAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3M9ImZvbnQtYm9sZCB0ZXh0LWluZGlnby04MDAiPuKXjyDntYzllrboppbngrnjga7jgqLjg4njg5DjgqTjgrk8L3NwYW4+DQogICAgICAgICAgICAgICAgICAgICAgICA8cCBjbGFzcz0idGV4dC1zbSB0ZXh0LWdyYXktNjAwIG10LTEiPuS8muitsOeoruWIpe+8iOW6l+mVt+S8muitsOOAgeS6i+alremDqOS8muitsOOBquOBqe+8ieOBq+WQiOOCj+OBm+OBn+mLreOBhOWKqeiogOOCkuihjOOBhOOBvuOBmeOAgjwvcD4NCiAgICAgICAgICAgICAgICAgICAgPC9kaXY+DQogICAgICAgICAgICAgICAgPC9kaXY+DQogICAgICAgICAgICA8L2Rpdj4NCiAgICAgICAgPC9zZWN0aW9uPg0KDQogICAgICAgIDwhLS0gMDIgRmVhdHVyZXMgLS0+DQogICAgICAgIDxzZWN0aW9uIGNsYXNzPSJtYi0xMiI+DQogICAgICAgICAgICA8aDIgY2xhc3M9InRleHQtMnhsIGZvbnQtYm9sZCBtYi02IGJvcmRlci1iLTIgYm9yZGVyLWJsdWUtNTAwIHBiLTIiPg0KICAgICAgICAgICAgICAgIDxpIGNsYXNzPSJmYXMgZmEtdGgtbGFyZ2UgdGV4dC1ibHVlLTYwMCBtci0yIj48L2k+Mi4g44Gn44GN44KL44GT44Go77yIMuOBpOOBruODouODvOODie+8iQ0KICAgICAgICAgICAgPC9oMj4NCiAgICAgICAgICAgIDxkaXYgY2xhc3M9ImdyaWQgbWQ6Z3JpZC1jb2xzLTIgZ2FwLTYiPg0KICAgICAgICAgICAgICAgIDwhLS0gTW9kZSAxIC0tPg0KICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9ImNhcmQgcC02IGJvcmRlci10LTQgYm9yZGVyLWJsdWUtNTAwIj4NCiAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3M9Im1vZGUtYmFkZ2UgYmctYmx1ZS0xMDAgdGV4dC1ibHVlLTcwMCBtYi0zIj5NT0RFIDAxPC9zcGFuPg0KICAgICAgICAgICAgICAgICAgICA8aDMgY2xhc3M9InRleHQteGwgZm9udC1ib2xkIG1iLTIiPumMsumfs+ODu+ODquOCouODq+OCv+OCpOODoOS9nOaIkDwvaDM+DQogICAgICAgICAgICAgICAgICAgIDxwIGNsYXNzPSJ0ZXh0LWdyYXktNjAwIHRleHQtc20gbWItNCI+44Oq44Ki44Or44K/44Kk44Og44Gr5Lya6K2w44Gu6K2w5LqL6Yyy44KS5Y+O6ZuG44GX44CB44K844Ot44GL44KJ44OJ44Kt44Ol44Oh44Oz44OI44KS55Sf5oiQ44GX44G+44GZ44CCPC9wPg0KICAgICAgICAgICAgICAgICAgICA8dWwgY2xhc3M9InRleHQtc20gc3BhY2UteS0yIj4NCiAgICAgICAgICAgICAgICAgICAgICAgIDxsaT48aSBjbGFzcz0iZmFzIGZhLWNoZWNrIHRleHQtYmx1ZS01MDAgbXItMiI+PC9pPuaWh+Wtl+i1t+OBk+OBlyArIEFJ6KaB57SEPC9saT4NCiAgICAgICAgICAgICAgICAgICAgICAgIDxsaT48aSBjbGFzcz0iZmFzIGZhLWNoZWNrIHRleHQtYmx1ZS01MDAgbXItMiI+PC9pPuOCs+ODs+OCteODq+OCv+ODs+ODiOimlueCueOBruijnOWujOODu+WKqeiogDwvbGk+DQogICAgICAgICAgICAgICAgICAgICAgICA8bGk+PGkgY2xhc3M9ImZhcyBmYS1jaGVjayB0ZXh0LWJsdWUtNTAwIG1yLTIiPjwvaT7nlKjpgJTvvJrlupfplbfkvJrorbDjgIHkuovmpa3pg6jkvJrorbDjgarjgak8L2xpPg0KICAgICAgICAgICAgICAgICAgICA8L3VsPg0KICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPSJtdC00IHAtMiBiZy1ncmF5LTUwIHJvdW5kZWQgdGV4dC14cyB0ZXh0LWdyYXktNTAwIGJvcmRlci1sLTIgYm9yZGVyLWdyYXktMzAwIj4NCiAgICAgICAgICAgICAgICAgICAgICAgIOKAu+mDqOmWgOaLheW9k+iAheS8muitsOOAgeaxjueUqOaJk+WQiOOBm+ODouODvOODieOBq+OCguWvvuW/nOa4iOOBvw0KICAgICAgICAgICAgICAgICAgICA8L2Rpdj4NCiAgICAgICAgICAgICAgICA8L2Rpdj4NCiAgICAgICAgICAgICAgICA8IS0tIE1vZGUgMiAtLT4NCiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPSJjYXJkIHAtNiBib3JkZXItdC00IGJvcmRlci1pbmRpZ28tNTAwIj4NCiAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3M9Im1vZGUtYmFkZ2UgYmctaW5kaWdvLTEwMCB0ZXh0LWluZGlnby03MDAgbWItMyI+TU9ERSAwMjwvc3Bhbj4NCiAgICAgICAgICAgICAgICAgICAgPGgzIGNsYXNzPSJ0ZXh0LXhsIGZvbnQtYm9sZCBtYi0yIj7jgqLjg7zjgqvjgqTjg5bliIbmnpA8L2gzPg0KICAgICAgICAgICAgICAgICAgICA8cCBjbGFzcz0idGV4dC1ncmF5LTYwMCB0ZXh0LXNtIG1iLTQiPuS9nOaIkOa4iOOBv+OBrldvcmQvUERG44KS44Ki44OD44OX44Ot44O844OJ44GX44CBQUnjgYzlhoXlrrnjgpLjgIzotaTjg5rjg7Pmt7vliYrjgI3jgZfjgb7jgZnjgII8L3A+DQogICAgICAgICAgICAgICAgICAgIDx1bCBjbGFzcz0idGV4dC1zbSBzcGFjZS15LTIiPg0KICAgICAgICAgICAgICAgICAgICAgICAgPGxpPjxpIGNsYXNzPSJmYXMgZmEtY2hlY2sgdGV4dC1pbmRpZ28tNTAwIG1yLTIiPjwvaT7mipzjgZHmvI/jgozjg7vmsbrlrprkuovpoIXjga7mmI7norrljJbjg4Hjgqfjg4Pjgq88L2xpPg0KICAgICAgICAgICAgICAgICAgICAgICAgPGxpPjxpIGNsYXNzPSJmYXMgZmEtY2hlY2sgdGV4dC1pbmRpZ28tNTAwIG1yLTIiPjwvaT7ljrPjgZfjgYTjgrPjg7PjgrXjg6voppbngrnjgafjga7jgrPjg6Hjg7Pjg4jov73oqJg8L2xpPg0KICAgICAgICAgICAgICAgICAgICAgICAgPGxpPjxpIGNsYXNzPSJmYXMgZmEtY2hlY2sgdGV4dC1pbmRpZ28tNTAwIG1yLTIiPjwvaT7nlKjpgJTvvJrpg6jkuIvjga7kvZzmiJDjgZfjgZ/orbDkuovpjLLjg4Hjgqfjg4Pjgq/jgarjgak8L2xpPg0KICAgICAgICAgICAgICAgICAgICA8L3VsPg0KICAgICAgICAgICAgICAgIDwvZGl2Pg0KICAgICAgICAgICAgPC9kaXY+DQogICAgICAgIDwvc2VjdGlvbj4NCg0KICAgICAgICA8IS0tIDAzIFVzYWdlIC0tPg0KICAgICAgICA8c2VjdGlvbiBjbGFzcz0ibWItMTIiPg0KICAgICAgICAgICAgPGgyIGNsYXNzPSJ0ZXh0LTJ4bCBmb250LWJvbGQgbWItNiBib3JkZXItYi0yIGJvcmRlci1ibHVlLTUwMCBwYi0yIj4NCiAgICAgICAgICAgICAgICA8aSBjbGFzcz0iZmFzIGZhLXBsYXktY2lyY2xlIHRleHQtYmx1ZS02MDAgbXItMiI+PC9pPjMuIOWfuuacrOeahOOBquS9v+OBhOaWuQ0KICAgICAgICAgICAgPC9oMj4NCiAgICAgICAgICAgIA0KICAgICAgICAgICAgPGRpdiBjbGFzcz0ibWItOCI+DQogICAgICAgICAgICAgICAgPGgzIGNsYXNzPSJ0ZXh0LWxnIGZvbnQtYm9sZCBtYi00IHRleHQtYmx1ZS04MDAgYmctYmx1ZS01MCBwLTIgcm91bmRlZCI+44CQ44Oi44O844OJMeOAkeODquOCouODq+OCv+OCpOODoOitsOS6i+mMsuS9nOaIkDwvaDM+DQogICAgICAgICAgICAgICAgPGRpdiBjbGFzcz0ic3BhY2UteS00Ij4NCiAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzcz0iZmxleCBnYXAtNCI+DQogICAgICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPSJzdGVwLW51bWJlciI+MTwvZGl2Pg0KICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8cCBjbGFzcz0iZm9udC1ib2xkIj7kvJrorbDnqK7liKXjgpLpgbjmip48L3A+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgPHAgY2xhc3M9InRleHQtc20gdGV4dC1ncmF5LTYwMCI+44CM5bqX6ZW35Lya6K2w77yI5LiB5a+n44Gq5Yqp6KiA77yJ44CN44KE44CM5bqX6IiX5LqL5qWt6YOo5Lya6K2w77yI5Y6z44GX44GE5oyH5pGY77yJ44CN44Gq44Gp44CB5Lya6K2w44Gu55uu55qE44KS6YG45oqe44GX44G+44GZ44CCPC9wPg0KICAgICAgICAgICAgICAgICAgICAgICAgPC9kaXY+DQogICAgICAgICAgICAgICAgICAgIDwvZGl2Pg0KICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPSJmbGV4IGdhcC00Ij4NCiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9InN0ZXAtbnVtYmVyIj4yPC9kaXY+DQogICAgICAgICAgICAgICAgICAgICAgICA8ZGl2Pg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxwIGNsYXNzPSJmb250LWJvbGQiPuasoeesrO+8iOOCouOCuOOCp+ODs+ODgO+8ieOBrueZu+mMsjwvcD4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8cCBjbGFzcz0idGV4dC1zbSB0ZXh0LWdyYXktNjAwIHRleHQtcmVkLTYwMCBmb250LW1lZGl1bSI+6YeN6KaB77ya5qyh56ys44KS6Kqt44G/6L6844G+44Gb44KL44GoQUnjga7nkIbop6PluqbjgYzliofnmoTjgavlkJHkuIrjgZfjgb7jgZnjgII8L3A+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgPHAgY2xhc3M9InRleHQteHMgdGV4dC1ncmF5LTUwMCI+77yIUERGL1dvcmQvRXhjZWzjgIHjgb7jgZ/jga/miYvli5XlhaXlipvlj6/vvIk8L3A+DQogICAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj4NCiAgICAgICAgICAgICAgICAgICAgPC9kaXY+DQogICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9ImZsZXggZ2FwLTQiPg0KICAgICAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzcz0ic3RlcC1udW1iZXIiPjM8L2Rpdj4NCiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgPHAgY2xhc3M9ImZvbnQtYm9sZCB0ZXh0LWJsdWUtNjAwIHVuZGVybGluZSI+5b2T6Kmy6K2w5LqL6Yyy44OV44Kh44Kk44Or55Sf5oiQPC9wPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxwIGNsYXNzPSJ0ZXh0LXNtIHRleHQtZ3JheS02MDAgaXRhbGljIj7igLvjgIzmrKHnrKzoqq3jgb/ovrzjgb/jgI3lvozjgavjgZPjga7jg5zjgr/jg7PjgpLmirzjgZnjgZPjgajjgafjgIHpjLLpn7Pjga7mupblgpnjgYzmlbTjgYTjgb7jgZnjgII8L3A+DQogICAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj4NCiAgICAgICAgICAgICAgICAgICAgPC9kaXY+DQogICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9ImZsZXggZ2FwLTQiPg0KICAgICAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzcz0ic3RlcC1udW1iZXIiPjQ8L2Rpdj4NCiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgPHAgY2xhc3M9ImZvbnQtYm9sZCI+6Yyy6Z+z44Go44Oq44Ki44Or44K/44Kk44Og5pu05pawPC9wPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxwIGNsYXNzPSJ0ZXh0LXNtIHRleHQtZ3JheS02MDAiPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDpjLLpn7Pplovlp4vlvozjgIHjgqLjgrjjgqfjg7Pjg4DntYLkuobjgZTjgajjgavjgIzljLrliIfjgovjgI3jg5zjgr/jg7PjgpLmjqjlpajjgIINCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg6YCU5Lit6YCB5L+h44GV44KM44KL44Gf44Gz44Gr44CBR29vZ2xl44OJ44Kt44Ol44Oh44Oz44OI44GrKirjg6rjgqLjg6vjgr/jgqTjg6DjgavoqJjpjLLjgZXjgozjgZ/orbDkuovjgahBSeOCs+ODs+OCteODq+OCv+ODs+ODiOOBruOCs+ODoeODs+ODiOOCkueiuuiqjeODu+S/ruato+OBjOWPr+iDvSoq44Gn44GZ44CCDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9wPg0KICAgICAgICAgICAgICAgICAgICAgICAgPC9kaXY+DQogICAgICAgICAgICAgICAgICAgIDwvZGl2Pg0KICAgICAgICAgICAgICAgIDwvZGl2Pg0KICAgICAgICAgICAgPC9kaXY+DQoNCiAgICAgICAgICAgIDxkaXY+DQogICAgICAgICAgICAgICAgPGgzIGNsYXNzPSJ0ZXh0LWxnIGZvbnQtYm9sZCBtYi00IHRleHQtaW5kaWdvLTgwMCBiZy1pbmRpZ28tNTAgcC0yIHJvdW5kZWQiPuOAkOODouODvOODiTLjgJHjgqLjg7zjgqvjgqTjg5bliIbmnpDvvIjmt7vliYrvvIk8L2gzPg0KICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9InNwYWNlLXktNCI+DQogICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9ImZsZXggZ2FwLTQiPg0KICAgICAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzcz0ic3RlcC1udW1iZXIiPjE8L2Rpdj4NCiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgPHAgY2xhc3M9ImZvbnQtYm9sZCI+44CM44Ki44O844Kr44Kk44OW5YiG5p6Q44Oi44O844OJ44CN44K/44OW44KS6YG45oqePC9wPg0KICAgICAgICAgICAgICAgICAgICAgICAgPC9kaXY+DQogICAgICAgICAgICAgICAgICAgIDwvZGl2Pg0KICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPSJmbGV4IGdhcC00Ij4NCiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9InN0ZXAtbnVtYmVyIj4yPC9kaXY+DQogICAgICAgICAgICAgICAgICAgICAgICA8ZGl2Pg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxwIGNsYXNzPSJmb250LWJvbGQiPuODleOCoeOCpOODq+OCkumBuOaKnuODu+WIhuaekOmWi+WnizwvcD4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8cCBjbGFzcz0idGV4dC1zbSB0ZXh0LWdyYXktNjAwIj7ml6LlrZjjg5XjgqHjgqTjg6vjgpLjgqLjg4Pjg5fjg63jg7zjg4njgZnjgovjgajjgIFBSeOBjOi1pOODmuODs+OCkuWFpeOCjOOBn+OAjOOAkOa3u+WJiua4iOOAkeOAnOOAjeODleOCoeOCpOODq+OCkuiHquWLleeUn+aIkOOBl+OBvuOBmeOAgjwvcD4NCiAgICAgICAgICAgICAgICAgICAgICAgIDwvZGl2Pg0KICAgICAgICAgICAgICAgICAgICA8L2Rpdj4NCiAgICAgICAgICAgICAgICA8L2Rpdj4NCiAgICAgICAgICAgIDwvZGl2Pg0KICAgICAgICA8L3NlY3Rpb24+DQoNCiAgICAgICAgPCEtLSAwNCBNaW51dGVzIEZvcm1hdCAtLT4NCiAgICAgICAgPHNlY3Rpb24gY2xhc3M9Im1iLTEyIj4NCiAgICAgICAgICAgIDxoMiBjbGFzcz0idGV4dC0yeGwgZm9udC1ib2xkIG1iLTYgYm9yZGVyLWItMiBib3JkZXItYmx1ZS01MDAgcGItMiI+DQogICAgICAgICAgICAgICAgPGkgY2xhc3M9ImZhcyBmYS1leWUgdGV4dC1ibHVlLTYwMCBtci0yIj48L2k+NC4g55Sf5oiQ44GV44KM44KL6K2w5LqL6Yyy44Gu6KaL5pa5DQogICAgICAgICAgICA8L2gyPg0KICAgICAgICAgICAgPGRpdiBjbGFzcz0iY2FyZCBvdmVyZmxvdy1oaWRkZW4iPg0KICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9ImJnLWdyYXktMTAwIHAtNCBib3JkZXItYiI+DQogICAgICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzPSJ0ZXh0LXhzIGZvbnQtYm9sZCB0ZXh0LWdyYXktNTAwIHVwcGVyY2FzZSB0cmFja2luZy13aWRlciI+RXhhbXBsZSBMYXlvdXQ8L3NwYW4+DQogICAgICAgICAgICAgICAgPC9kaXY+DQogICAgICAgICAgICAgICAgPGRpdiBjbGFzcz0icC02Ij4NCiAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzcz0ibWItOCI+DQogICAgICAgICAgICAgICAgICAgICAgICA8aDMgY2xhc3M9ImZvbnQtYm9sZCBib3JkZXItbC00IGJvcmRlci1ncmF5LTgwMCBwbC0yIG1iLTQgdGV4dC1sZyI+MS4g44G+44Go44KB77yIU3VtbWFyee+8iTwvaDM+DQogICAgICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPSJiZy1ncmF5LTUwIHAtNCByb3VuZGVkIGJvcmRlciI+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgPHVsIGNsYXNzPSJzcGFjZS15LTIgdGV4dC1zbSI+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxsaT48c3BhbiBjbGFzcz0iZm9udC1ib2xkIHRleHQtYmx1ZS03MDAiPigxKSDmsbrjgb7jgaPjgZ/jgZPjgag8L3NwYW4+77ya5Y+C5Yqg6ICF44GM5ZCI5oSP44GX44Gf5LqL5a6fPC9saT4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPGxpPjxzcGFuIGNsYXNzPSJmb250LWJvbGQgdGV4dC1yZWQtNzAwIj4oMikg55u044Gh44Gr44KE44KL44G544GN44GT44GoPC9zcGFuPu+8muacn+mZkOOBqOaLheW9k+iAhe+8iOaOqOa4rOWQq++8iTwvbGk+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxsaT48c3BhbiBjbGFzcz0iZm9udC1ib2xkIHRleHQteWVsbG93LTcwMCI+KDMpIOasoeWbnuOBvuOBp+OBruiqsumhjDwvc3Bhbj7vvJrkv53nlZnkuovpoIU8L2xpPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvdWw+DQogICAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj4NCiAgICAgICAgICAgICAgICAgICAgPC9kaXY+DQoNCiAgICAgICAgICAgICAgICAgICAgPGRpdj4NCiAgICAgICAgICAgICAgICAgICAgICAgIDxoMyBjbGFzcz0iZm9udC1ib2xkIGJvcmRlci1sLTQgYm9yZGVyLWdyYXktODAwIHBsLTIgbWItNCB0ZXh0LWxnIj4yLiDorbDkuovpjLLmnKzmlofvvIhNaW51dGVz77yJPC9oMz4NCiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9InNwYWNlLXktMyI+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzcz0icC0zIGJnLWdyYXktMTAwIHJvdW5kZWQgdGV4dC1zbSBmb250LWJvbGQiPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDjgJDorbDoq5bjga7opoHngrnjgJENCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3M9InRleHQteHMgZm9udC1ub3JtYWwgYmxvY2sgdGV4dC1ncmF5LTUwMCBtdC0xIj7igLvlhoXlrrnjgavjgojjgorjgIzloLHlkYrkuovpoIXjgI3jgIzmj5DmoYjkuovpoIXjgI3jgIzlhbHmnInkuovpoIXjgI3nrYnjgavoh6rli5XjgafliIfjgormm7/jgo/jgorjgb7jgZk8L3NwYW4+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9kaXY+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzcz0icC0zIGJnLW1pbnV0ZXMtYmx1ZSB0ZXh0LXNtIj7jgJDmsbrlrprkuovpoIXjg7vmib/oqo3kuovpoIXjgJHnorrlrprjgZfjgZ/lhoXlrrnjgpLpnZLoibLjgafooajnpLo8L2Rpdj4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPSJwLTMgYmctbWludXRlcy15ZWxsb3cgdGV4dC1zbSI+8J+SrOOAkOWun+ihjOOBq+WQkeOBkeOBn+imlueCueOAkeePvuWgtOOBp+OBruWun+aWveOBq+OBiuOBkeOCi+ODkuODs+ODiDwvZGl2Pg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9InAtMyBiZy1taW51dGVzLXJlZC1saWdodCB0ZXh0LXNtIj7wn5Kh44CQ5YW35L2T55qE44Gq44Ki44Kv44K344On44Oz5qGI44CR5bqX6ZW35Lya6K2w55So44Gu44Ki44Kv44K344On44Oz5o+Q5qGIPC9kaXY+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzcz0icC0zIGJnLW1pbnV0ZXMtcmVkLWRhcmsgdGV4dC13aGl0ZSB0ZXh0LXNtIj7imqDvuI/jgJDntYzllrboppbngrnjgafjga7mjIfmkZjjgJHkuovmpa3pg6jkvJrorbDnlKjjga7jg6rjgrnjgq/mjIfmkZg8L2Rpdj4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPSJwLTMgYmctbWludXRlcy1ibHVlLWRhcmsgdGV4dC1zbSI+8J+UpeOAkE5leHQgQWN0aW9u44CR5LqL5qWt6YOo5Lya6K2w55So44Gu5by35Yqb44Gq5qWt5YuZ5ZG95LukPC9kaXY+DQogICAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj4NCiAgICAgICAgICAgICAgICAgICAgPC9kaXY+DQogICAgICAgICAgICAgICAgPC9kaXY+DQogICAgICAgICAgICA8L2Rpdj4NCiAgICAgICAgPC9zZWN0aW9uPg0KDQogICAgICAgIDwhLS0gMDUgVGlwcyAtLT4NCiAgICAgICAgPHNlY3Rpb24+DQogICAgICAgICAgICA8aDIgY2xhc3M9InRleHQtMnhsIGZvbnQtYm9sZCBtYi02IGJvcmRlci1iLTIgYm9yZGVyLWJsdWUtNTAwIHBiLTIiPg0KICAgICAgICAgICAgICAgIDxpIGNsYXNzPSJmYXMgZmEtbGlnaHRidWxiIHRleHQtYmx1ZS02MDAgbXItMiI+PC9pPjUuIOS4iuaJi+OBj+S9v+OBhuOBn+OCgeOBruOCs+ODhA0KICAgICAgICAgICAgPC9oMj4NCiAgICAgICAgICAgIDxkaXYgY2xhc3M9InNwYWNlLXktNCI+DQogICAgICAgICAgICAgICAgPGRpdiBjbGFzcz0iYmctd2hpdGUgcC01IHJvdW5kZWQtbGcgYm9yZGVyLWwtNCBib3JkZXItZ3JlZW4tNTAwIHNoYWRvdy1zbSI+DQogICAgICAgICAgICAgICAgICAgIDxwIGNsYXNzPSJmb250LWJvbGQgdGV4dC1ncmVlbi04MDAgbWItMiI+US4g44CM5ouF5b2T6ICF5pyq5a6a44CN44Gw44GL44KK44Gr44Gq44KL44Gu44Gn44GZ44GM4oCm77yfPC9wPg0KICAgICAgICAgICAgICAgICAgICA8cCBjbGFzcz0idGV4dC1zbSB0ZXh0LWdyYXktNzAwIGxlYWRpbmctcmVsYXhlZCI+DQogICAgICAgICAgICAgICAgICAgICAgICBBLiDkvJrorbDkuK3jgasqKuOAjOOBmOOCg+OBguOBk+OCjOOBr+OAh+OAh+OBleOCk+OBjOOAgeOBhOOBpOOBhOOBpOOBvuOBp+OBq+OChOOBo+OBpuOBreOAjSoq44Go44CB55m66KiA6ICF44GM5piO56K644Gr5oyH56S644KS5Ye644GZ44KI44GG44Gr5oSP6K2Y44GX44Gm44G/44Gm44GP44Gg44GV44GE44CCQUnjgavmlZnjgYjjgovjgaTjgoLjgorjgafllovjgovjgZPjgajjgafjgIEqKuS8muitsOiHquS9k+OBruizquOCguWQkeS4iuOBl+OBvuOBmeOAgioqDQogICAgICAgICAgICAgICAgICAgIDwvcD4NCiAgICAgICAgICAgICAgICA8L2Rpdj4NCiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPSJiZy13aGl0ZSBwLTUgcm91bmRlZC1sZyBib3JkZXItbC00IGJvcmRlci1vcmFuZ2UtNTAwIHNoYWRvdy1zbSI+DQogICAgICAgICAgICAgICAgICAgIDxwIGNsYXNzPSJmb250LWJvbGQgdGV4dC1vcmFuZ2UtODAwIG1iLTIiPlEuIOitsOS6i+mMsuOBjOmVt+OBmeOBjuOBpumAlOS4reOBp+WIh+OCjOOBpuOBhOOCi++8nzwvcD4NCiAgICAgICAgICAgICAgICAgICAgPHAgY2xhc3M9InRleHQtc20gdGV4dC1ncmF5LTcwMCBsZWFkaW5nLXJlbGF4ZWQiPg0KICAgICAgICAgICAgICAgICAgICAgICAgQS4gM+aZgumWk+OCkui2heOBiOOCi+OCiOOBhuOBqumVt+aZgumWk+S8muitsOOBruWgtOWQiOOAgUdvb2dsZeODieOCreODpeODoeODs+ODiOOBruWItumZkOOBq+OBi+OBi+OCi+OBk+OBqOOBjOOBguOCiuOBvuOBmeOAguS8keaGqeaZgumWk+OBquOBqeOBpyoq44CM6K2w5LqL6Yyy44OV44Kh44Kk44Or5L2c5oiQ44CN44KS5YaN5bqm6KGM44GE44CB5YmN5Y2K44O75b6M5Y2K44Gr5YiG44GR44KLKirjga7jgYzjgYrli6fjgoHjgafjgZnjgIINCiAgICAgICAgICAgICAgICAgICAgPC9wPg0KICAgICAgICAgICAgICAgIDwvZGl2Pg0KICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9ImJnLXdoaXRlIHAtNSByb3VuZGVkLWxnIGJvcmRlci1sLTQgYm9yZGVyLXB1cnBsZS01MDAgc2hhZG93LXNtIj4NCiAgICAgICAgICAgICAgICAgICAgPHAgY2xhc3M9ImZvbnQtYm9sZCB0ZXh0LXB1cnBsZS04MDAgbWItMiI+US4gQUnjga7jgqLjg4njg5DjgqTjgrnjgYzljrPjgZfjgZnjgY7jgosv5YSq44GX44GZ44GO44KLPC9wPg0KICAgICAgICAgICAgICAgICAgICA8cCBjbGFzcz0idGV4dC1zbSB0ZXh0LWdyYXktNzAwIGxlYWRpbmctcmVsYXhlZCI+DQogICAgICAgICAgICAgICAgICAgICAgICBBLiDkvJrorbDnqK7liKXjgZTjgajjgatBSeOBruaMr+OCi+iInuOBhOOCkuWkieOBiOOBpuOBhOOBvuOBmeOAguS8muekvuOBruODleOCp+ODvOOCuuOChOebrueahOOBq+W/nOOBmOOBpuODnuOCpOODq+ODieOBq+OBmeOCi+ODu+WOs+OBl+OBj+OBmeOCi+etieOBruiqv+aVtOOBr+WPr+iDveOBp+OBmeOBruOBp+OAgemBi+eUqOOBq+WQiOOCj+OBm+OBpuODquOCr+OCqOOCueODiOOBl+OBpuOBj+OBoOOBleOBhOOAgg0KICAgICAgICAgICAgICAgICAgICA8L3A+DQogICAgICAgICAgICAgICAgPC9kaXY+DQogICAgICAgICAgICA8L2Rpdj4NCiAgICAgICAgPC9zZWN0aW9uPg0KDQogICAgPC9tYWluPg0KDQogICAgPGZvb3RlciBjbGFzcz0ibXQtMTIgdGV4dC1jZW50ZXIgdGV4dC1ncmF5LTQwMCB0ZXh0LXNtIj4NCiAgICAgICAgPHA+JmNvcHk7IDIwMjYg44K544Kw44Ot44KvLiBBbGwgUmlnaHRzIFJlc2VydmVkLjwvcD4NCiAgICA8L2Zvb3Rlcj4NCg0KPC9ib2R5Pg0KPC9odG1sPg0K';
+
+    // ============================================================
+    //  Google Sign-In コールバック
+    // ============================================================
+    function handleCredentialResponse(response) {
+      try {
+        // JWTペイロードをデコード（検証はGAS側で実施）
+        const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        const email   = payload.email || '';
+        const domain  = email.split('@')[1] || '';
+
+        // クライアント側ドメインチェック（簡易）
+        if (!CONFIG.ALLOWED_DOMAINS.includes(domain)) {
+          const errEl = document.getElementById('login-error');
+          errEl.textContent = `社内アカウント（${CONFIG.ALLOWED_DOMAINS.join(' / ')}）でログインしてください。\n現在のアカウント: ${email}`;
+          errEl.style.display = 'block';
+          return;
+        }
+
+        currentIdToken = response.credential;
+        currentUser    = { email, name: payload.name || email };
+
+        // トークン自動リフレッシュをスケジュール
+        scheduleTokenRefresh(payload.exp);
+
+        // ログイン画面を隠してメインアプリを表示
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+
+        // ユーザー表示
+        const dispEl = document.getElementById('login-user-display');
+        if (dispEl) dispEl.textContent = '👤 ' + currentUser.email;
+
+        // システム初期化ローディング
+        showLoading('システム準備中... 音声認識AIを起動しています');
+        setTimeout(() => {
+          hideLoading();
+          log(`ログイン完了: ${currentUser.email}`, 'success');
+          log('システム準備完了。録音を開始できます。', 'success');
+          // 新タブでログインした直後、前タブから引き継がれた状態があれば自動復元
+          try { applyHandoffIfAny(); } catch (e) { console.warn('applyHandoffIfAny failed', e); }
+          // v3.0.0: IndexedDB に前回セッションの未送信 chunk が残っていれば復旧
+          try { checkAndRecoverPendingChunks_(); } catch (e) { console.warn('recover failed', e); }
+        }, 2000);
+
+      } catch (err) {
+        console.error('handleCredentialResponse error:', err);
+        const errEl = document.getElementById('login-error');
+        errEl.textContent = 'ログイン処理でエラーが発生しました: ' + err.message;
+        errEl.style.display = 'block';
+      }
+    }
+
+    // ============================================================
+    //  IDトークン自動リフレッシュ
+    //  Google IDトークンは1時間で期限切れになるため、
+    //  50分経過時点でサイレントリフレッシュを試みる
+    // ============================================================
+    let tokenRefreshTimer = null;
+    function scheduleTokenRefresh(expUnix) {
+      if (tokenRefreshTimer) clearTimeout(tokenRefreshTimer);
+      const refreshAt = expUnix * 1000 - (10 * 60 * 1000); // 期限10分前
+      const delay = Math.max(refreshAt - Date.now(), 0);
+      tokenRefreshTimer = setTimeout(() => {
+        log('⏰ セッションを自動更新しています...', 'normal');
+        google.accounts.id.prompt(notification => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            log('⚠️ セッションの自動更新ができませんでした。エラーが続く場合はページを再読み込みして再ログインしてください。', 'error');
+          }
+          // 成功時は handleCredentialResponse が呼ばれ、トークンと次のリフレッシュが自動更新される
+        });
+      }, delay);
+    }
+
+    // ============================================================
+    //  callGAS: GAS doPost を fetch で呼び出す汎用関数
+    // ============================================================
+    async function callGAS(action, params = {}) {
+      if (!currentIdToken) throw new Error('ログインが必要です');
+      const body = JSON.stringify({ action, idToken: currentIdToken, ...params });
+      const res  = await fetch(CONFIG.GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+        body
+      });
+      if (!res.ok) throw new Error('通信エラー: HTTP ' + res.status);
+      const json = await res.json();
+      if (json && json.error) throw new Error(json.error);
+      return json;
+    }
+
+    // ============================================================
+    //  タブ切替
+    // ============================================================
+    function switchTab(mode) {
+      if (mode === 'manual') {
+        openManualInNewPage();
+        mode = 'record';
+      }
+
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.mode-content').forEach(c => c.classList.remove('active'));
+
+      const map = { record: 1, analyze: 2 };
+      const tabIndex = map[mode] || 1;
+      const modeEl = document.getElementById(`mode-${mode}`) || document.getElementById('mode-record');
+
+      const tab = document.querySelector(`.tab:nth-child(${tabIndex})`);
+      if (tab) tab.classList.add('active');
+      if (modeEl) modeEl.classList.add('active');
+    }
+
+    // ============================================================
+    //  共通ユーティリティ
+    // ============================================================
+    function log(msg, type = 'normal') {
+      const d = document.createElement('div');
+      d.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      if (type === 'success') d.style.color = 'green';
+      if (type === 'error')   d.style.color = 'red';
+      const logArea = document.getElementById('upload-log');
+      logArea.prepend(d);
+      // ログ保持上限（長時間録音でも前半を追えるよう大きめに確保）
+      while (logArea.children.length > 1000) {
+        logArea.removeChild(logArea.lastChild);
+      }
+    }
+
+    function openModal()  { document.getElementById('installModal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('installModal').style.display = 'none'; }
+
+    function decodeBase64Utf8(b64) {
+      const binary = atob(b64);
+      const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+      return new TextDecoder().decode(bytes);
+    }
+
+    function openManualInNewPage() {
+      try {
+        const html = decodeBase64Utf8(EMBEDDED_MANUAL_B64);
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank', 'noopener,noreferrer');
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      } catch (e) {
+        alert('マニュアルの表示に失敗しました: ' + e.message);
+      }
+    }
+
+    function setupMobileRefreshGuard() {
+      const ua = navigator.userAgent || '';
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(ua);
+      if (!isMobile) return;
+
+      document.documentElement.style.overscrollBehaviorY = 'none';
+      document.body.style.overscrollBehaviorY = 'none';
+
+      let startY = 0;
+      let handled = false;
+
+      window.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) return;
+        startY = e.touches[0].clientY;
+        handled = false;
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (e.touches.length !== 1) return;
+        const delta = e.touches[0].clientY - startY;
+        const atTop = window.scrollY <= 0;
+        if (atTop && delta > 70) {
+          e.preventDefault();
+          if (!handled) {
+            handled = true;
+            const ok = confirm('ページを更新しますか？\n録音中は「キャンセル」を推奨します。');
+            if (ok) location.reload();
+          }
+        }
+      }, { passive: false });
+    }
+
+    function showLoading(msg) {
+      document.getElementById('loading-msg').innerText = msg || '処理中...';
+      document.getElementById('loading-overlay').style.display = 'flex';
+    }
+    function hideLoading() {
+      document.getElementById('loading-overlay').style.display = 'none';
+    }
+
+    // ============================================================
+    //  Mode 2: 過去議事録分析
+    // ============================================================
+    function runAnalysis() {
+      const fileInput  = document.getElementById('past-file');
+      const textInput  = document.getElementById('past-text').value;
+      const agendaText = document.getElementById('agenda-input-analyze').value;
+      const meetingType = document.getElementById('meeting-type-select').value;
+      const btn = document.getElementById('analyzeBtn');
+
+      if (!fileInput.files[0] && !textInput.trim()) {
+        alert('分析対象のファイル（過去の議事録）を選択してください。');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = '⏳ 経営視点で分析中...';
+      log(`分析を開始しました (${meetingType})...`, 'normal');
+
+      const process = async (fileData) => {
+        try {
+          const res = await callGAS('analyzePastMinutes', {
+            fileData,
+            inputText: textInput,
+            agendaText,
+            meetingType
+          });
+          log(`✅ レポート作成完了: ${res.name}`, 'success');
+          const link = document.getElementById('analyzed-link');
+          link.href    = res.url;
+          link.innerText = res.name;
+          document.getElementById('analyze-link-container').style.display = 'block';
+        } catch (err) {
+          log(`❌ 分析エラー: ${err.message}`, 'error');
+          alert('エラー: ' + err.message);
+        } finally {
+          btn.innerText = '⚡ 分析してレポート作成';
+          btn.disabled  = false;
+        }
+      };
+
+      if (fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          process({
+            base64:   e.target.result.split(',')[1],
+            mimeType: fileInput.files[0].type,
+            fileName: fileInput.files[0].name
+          });
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        process(null);
+      }
+    }
+
+    // ============================================================
+    //  次第ファイル読み込みローダー
+    // ============================================================
+    function setupAgendaLoader(inputId, statusId, outputId) {
+      document.getElementById(inputId).onchange = e => {
+        const f = e.target.files[0];
+        if (!f) return;
+
+        showLoading('次第ファイルを解析しています...');
+        document.getElementById(statusId).innerText = '⌛';
+
+        const r = new FileReader();
+        r.onload = async ev => {
+          try {
+            const text = await callGAS('parseAgendaFile', {
+              base64Data: ev.target.result.split(',')[1],
+              mimeType:   f.type,
+              fileName:   f.name
+            });
+            document.getElementById(outputId).value = text;
+            document.getElementById(statusId).innerText = '✅';
+            hideLoading();
+            log(`次第読み取り完了: ${f.name}`, 'success');
+          } catch (err) {
+            document.getElementById(statusId).innerText = '❌';
+            hideLoading();
+            const msg = err.message || String(err);
+            const isBusy = /high demand|overloaded|unavailable|混雑|503|429/i.test(msg);
+            if (isBusy) {
+              alert('AIサーバーが混雑しています。\n\n以下のいずれかで回避できます:\n① 数分待って再度ファイルをアップロード\n② 次第ファイルは読み込まず、直接「新規ファイル作成」→「録音開始」に進む（次第なしでも録音は可能）\n\n詳細: ' + msg);
+            } else {
+              alert('次第読み取りエラー: ' + msg);
+            }
+            log(`次第読み取り失敗: ${msg}`, 'error');
+          }
+        };
+        r.readAsDataURL(f);
+      };
+    }
+
+    // ============================================================
+    //  Mode 1: 録音ロジック（v3.0.0：状態マシン + IndexedDB キュー）
+    // ============================================================
+    // 仕様書: specs/議事録ビルダー_統合仕様書_V3.0.0.md
+    //
+    // 状態: IDLE → RECORDING ⇄ PAUSED → RECORDING → WAITING → RECORDING ... → FINISHED
+    //
+    // [O1] chunk は UUID 付与で冪等送信（backend: processedChunks で重複排除）
+    // [A1] 送信は IndexedDB queue に一旦保存 → 非同期ドレイン → GAS enqueueChunk (即応答)
+    // [D1] タブ閉じ・オフラインでも IndexedDB に残るので次回起動で復帰送信可能
+
+    // --- 定数 ---
+    const AUTO_SEND_MS          = 9.5 * 60 * 1000;   // chunk自動区切り
+    const MAX_PAUSE_MS          = 30 * 60 * 1000;     // 一時停止の最大時間（超過で自動WAITING）
+    const STATUS_POLL_INTERVAL  = 10 * 1000;          // ジョブステータスポーリング間隔
+    const MAX_SEND_RETRY        = 5;                   // フロント側リトライ回数
+    const RETRY_WAITS_MS        = [3000, 7000, 15000, 30000, 60000];
+
+    // --- 状態マシン ---
+    const REC_STATE = { IDLE: 'IDLE', RECORDING: 'RECORDING', PAUSED: 'PAUSED', WAITING: 'WAITING', FINISHED: 'FINISHED' };
+    let recState = REC_STATE.IDLE;
+
+    // --- メディア／タイマー ---
+    let mediaRecorder = null;
+    let audioChunks   = [];
+    let micStream     = null;
+    let autoSplitTimer = null;
+    let timerInterval  = null;
+    let statusPollTimer = null;
+    let pauseTimeoutTimer = null;
+
+    // --- Partカウンタ ---
+    let partCount = 1;
+    let minId;
+
+    // --- 時間カウンタ ---
+    let recStartAt = null;          // 録音開始時刻(絶対epoch)
+    let pauseStartAt = null;        // 一時停止開始時刻
+    let accumulatedPauseMs = 0;     // 累積一時停止時間
+    let autoSplitRemainingMs = AUTO_SEND_MS; // 一時停止凍結対応
+
+    // stopIntent: MediaRecorder.stop() 発火時の onstop 挙動を分岐させる制御変数
+    //   'continue' : ♻️ 区切る → 同Part連続、新Recorderで継続
+    //   'break'    : 📥 区切って休憩 → WAITING へ、マイク解放
+    //   'stop'     : ⏹ 終了 → FINISHED へ、finalize 実行
+    //   null       : 未設定（デフォルト continue 扱い）
+    let stopIntent = null;
+
+    // 共通: 新しい MediaRecorder を生成してハンドラを結線する
+    function createRecorder(stream) {
+      const rec = new MediaRecorder(stream);
+      rec.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+      rec.onstop = handleStop;
+      return rec;
+    }
+
+    // ============================================================
+    //  IndexedDB 送信キュー（v3.0.0）
+    // ============================================================
+    const IDB_NAME = 'suguroku_queue_v3';
+    const IDB_STORE = 'chunks';
+    const IDB_VERSION = 1;
+
+    function idbOpen_() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(IDB_STORE)) {
+            const store = db.createObjectStore(IDB_STORE, { keyPath: 'chunkId' });
+            store.createIndex('state', 'state', { unique: false });
+            store.createIndex('docId', 'docId', { unique: false });
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function idbPutChunk_(record) {
+      const db = await idbOpen_();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).put(record);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function idbUpdateChunk_(chunkId, updater) {
+      const db = await idbOpen_();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        const store = tx.objectStore(IDB_STORE);
+        const getReq = store.get(chunkId);
+        getReq.onsuccess = () => {
+          const rec = getReq.result;
+          if (!rec) { resolve(null); return; }
+          const updated = updater(rec);
+          store.put(updated);
+        };
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function idbGetByState_(state) {
+      const db = await idbOpen_();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_STORE, 'readonly');
+        const store = tx.objectStore(IDB_STORE);
+        const idx = store.index('state');
+        const req = idx.getAll(state);
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function idbDeleteChunk_(chunkId) {
+      const db = await idbOpen_();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).delete(chunkId);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    function generateChunkId_() {
+      if (crypto && crypto.randomUUID) return crypto.randomUUID();
+      // フォールバック
+      return 'chunk-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+    }
+
+    async function blobToBase64_(blob) {
+      return new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = e => resolve(e.target.result.split(',')[1]);
+        r.onerror = () => reject(r.error);
+        r.readAsDataURL(blob);
+      });
+    }
+
+    // ============================================================
+    //  送信ロジック: 冪等POST + リトライ
+    // ============================================================
+    async function sendChunkToBackend_(chunkRecord) {
+      let lastErr = null;
+      for (let attempt = 0; attempt <= MAX_SEND_RETRY; attempt++) {
+        if (attempt > 0) {
+          const wait = RETRY_WAITS_MS[attempt - 1] || 60000;
+          log(`⚠️ Part ${chunkRecord.partNum} 再送中 ${attempt}/${MAX_SEND_RETRY}（${wait/1000}秒後）...`, 'error');
+          await new Promise(r => setTimeout(r, wait));
+        }
+        try {
+          const res = await callGAS('enqueueChunk', {
+            chunkId:     chunkRecord.chunkId,
+            base64Data:  chunkRecord.base64,
+            mimeType:    chunkRecord.mimeType,
+            partNum:     chunkRecord.partNum,
+            targetDocId: chunkRecord.docId,
+            agendaText:  chunkRecord.agendaText || ''
+          });
+          if (res && (res.status === 'queued' || res.status === 'already_queued' || res.status === 'already_processed')) {
+            log(`✅ Part ${chunkRecord.partNum} キュー投入完了（${res.status}）`, 'success');
+            return { ok: true, response: res };
+          }
+          lastErr = new Error(res && res.error ? res.error : 'unknown response');
+        } catch (err) {
+          lastErr = err;
+        }
+      }
+      return { ok: false, error: lastErr };
+    }
+
+    // ============================================================
+    //  IndexedDB ドレイン: pending chunks を全部送信試行
+    // ============================================================
+    async function drainPendingQueue_() {
+      const pending = await idbGetByState_('pending');
+      if (pending.length === 0) return { drained: 0, failed: 0 };
+      let drained = 0, failed = 0;
+      for (const rec of pending) {
+        const result = await sendChunkToBackend_(rec);
+        if (result.ok) {
+          await idbUpdateChunk_(rec.chunkId, r => ({ ...r, state: 'sent', sentAt: Date.now() }));
+          // sent 状態は一定時間後に削除して IndexedDB を肥大化させない（次ドレインで掃除）
+          setTimeout(() => { idbDeleteChunk_(rec.chunkId).catch(()=>{}); }, 60000);
+          drained++;
+        } else {
+          await idbUpdateChunk_(rec.chunkId, r => ({
+            ...r,
+            attemptCount: (r.attemptCount || 0) + 1,
+            lastError: result.error ? result.error.message : 'unknown',
+            lastAttemptAt: Date.now()
+          }));
+          showChunkBackupLink_(rec);
+          failed++;
+        }
+      }
+      return { drained, failed };
+    }
+
+    function showChunkBackupLink_(rec) {
+      try {
+        const blobUrl = URL.createObjectURL(rec.blob);
+        const logArea = document.getElementById('upload-log');
+        const dlDiv = document.createElement('div');
+        dlDiv.style.cssText = 'background:#fff3cd;padding:6px 10px;border-radius:4px;margin:4px 0;';
+        const dlLink = document.createElement('a');
+        dlLink.href = blobUrl;
+        dlLink.download = `Part${rec.partNum}_backup_${new Date().toTimeString().slice(0,8).replace(/:/g,'')}.webm`;
+        dlLink.textContent = `⬇️ Part ${rec.partNum} の音声をバックアップ保存（必ずクリック）`;
+        dlLink.style.cssText = 'color:#856404;font-weight:bold;';
+        dlDiv.appendChild(dlLink);
+        logArea.prepend(dlDiv);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 30 * 60 * 1000);
+      } catch (e) { /* ignore */ }
+    }
+
+    // --- ファイル選択モーダル ---
+    function showFileSelectionModal(candidates) {
+      const overlay = document.createElement('div');
+      overlay.id = 'file-select-overlay';
+      overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); display: flex; justify-content: center;
+        align-items: center; z-index: 2000;
+      `;
+
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-family: sans-serif;
+      `;
+
+      const title = document.createElement('h3');
+      title.innerText = '再開するファイルを選択してください';
+      title.style.marginTop = '0';
+      modal.appendChild(title);
+
+      const list = document.createElement('ul');
+      list.style.cssText = 'list-style: none; padding: 0; margin: 15px 0; max-height: 300px; overflow-y: auto;';
+
+      candidates.forEach(c => {
+        const li = document.createElement('li');
+        li.style.cssText = 'padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;';
+        li.onmouseover = () => li.style.background = '#f9f9f9';
+        li.onmouseout  = () => li.style.background = 'white';
+        li.innerHTML = `
+          <div style="width:100%">
+            <div style="font-weight:bold; font-size:16px; color:#2c3e50;">${c.minutesName}</div>
+            <div style="font-size:12px; color:#7f8c8d; margin-top:4px;">更新: ${c.lastUpdated}</div>
+          </div>
+          <div style="color:#3498db; font-size:1.5em; font-weight:bold;">›</div>
+        `;
+        li.onclick = () => {
+          document.body.removeChild(overlay);
+          if (confirm(`${c.minutesName} から再開しますか？`)) {
+            setMeetingFiles(c);
+            log('記録を再開しました', 'success');
+          }
+        };
+        list.appendChild(li);
+      });
+      modal.appendChild(list);
+
+      const closeBtn = document.createElement('button');
+      closeBtn.innerText = 'キャンセル（新規作成へ）';
+      closeBtn.style.cssText = 'width: 100%; padding: 10px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;';
+      closeBtn.onclick = () => {
+        document.body.removeChild(overlay);
+        if (confirm('直近のファイルを使用せずに、新規作成しますか？')) {
+          showLoading('新規作成へ移行します...');
+          triggerCreateNew();
+        }
+      };
+      modal.appendChild(closeBtn);
+
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
+    }
+
+    async function triggerCreateNew() {
+      const btn = document.getElementById('createBtn');
+      btn.disabled = true;
+      const agenda      = document.getElementById('agenda-input-record').value;
+      const meetingType = document.getElementById('meeting-type-select').value;
+
+      showLoading('新規議事録を作成中...');
+      try {
+        const res = await callGAS('createNewMinuteDoc', { agendaText: agenda, meetingType });
+        setMeetingFiles(res);
+        btn.innerText = '✅ 作成完了';
+        hideLoading();
+        log('新規ファイル作成完了（自動遷移）', 'success');
+      } catch (err) {
+        hideLoading();
+        btn.disabled = false;
+        alert('ファイル作成失敗: ' + err.message);
+      }
+    }
+
+    function setMeetingFiles(res) {
+      minId = res.minutesId;
+      document.getElementById('doc-name-display').innerText = res.minutesName;
+      document.getElementById('current-doc-info').style.display = 'block';
+
+      const minLink = document.getElementById('min-link');
+      minLink.href      = res.minutesUrl;
+      minLink.innerText = '📝 議事録を開く';
+
+      document.getElementById('links-container').style.display = 'block';
+      document.getElementById('startBtn').disabled = false;
+      const hb = document.getElementById('handoffBtn');
+      if (hb) hb.disabled = false; // 議事録ID確定後はいつでも引き継げるようにする
+    }
+
+    // ============================================================
+    //  セッション切れ救済: 新タブへの状態引き継ぎ
+    //  現在の議事録ID・次第・次のパート番号・会議種別を localStorage 経由で新タブに渡す。
+    //  旧タブはそのまま最後のチャンク送信を続ける（失敗してもバックアップDLリンクは残る）。
+    // ============================================================
+    const HANDOFF_KEY = 'suguroku_handoff_v1';
+    const HANDOFF_TTL_MS = 10 * 60 * 1000; // 10分以上経過した handoff は捨てる（誤適用防止）
+
+    function handleHandoff() {
+      if (!minId) { alert('議事録ファイルがまだ作成されていません。'); return; }
+      const ok = confirm(
+        '新しいタブで続行します。\n\n' +
+        '・現在の録音は区切って送信します（引き継ぎ後の旧タブは閉じて構いません）\n' +
+        '・新タブで Google 再ログイン後、次のパート番号から録音を再開できます\n\n' +
+        'よろしいですか？'
+      );
+      if (!ok) return;
+
+      // 録音中であれば区切り送信して停止する（partCount はその場で +1 される）
+      let nextPart;
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        try { triggerSplit(); } catch(e) { console.warn('handoff: triggerSplit error', e); }
+        nextPart = partCount + 1; // 区切り直後の次チャンク
+      } else {
+        nextPart = partCount;
+      }
+
+      const payload = {
+        minId: minId,
+        partCount: nextPart,
+        agenda: document.getElementById('agenda-input-record').value || '',
+        meetingType: document.getElementById('meeting-type-select').value || 'store_manager',
+        minutesName: document.getElementById('doc-name-display').innerText || '',
+        minutesUrl: (document.getElementById('min-link') || {}).href || '',
+        handoffAt: Date.now()
+      };
+      try {
+        localStorage.setItem(HANDOFF_KEY, JSON.stringify(payload));
+      } catch (e) {
+        alert('引き継ぎ状態の保存に失敗しました: ' + e.message);
+        return;
+      }
+      log(`🆕 新タブへ引き継ぎ中（Part ${nextPart} から再開予定）`, 'normal');
+      // 新タブを同じURLで開く。新タブ側はログイン後に handoff を検出して復元する。
+      window.open(location.href, '_blank');
+    }
+
+    function applyHandoffIfAny() {
+      let raw;
+      try { raw = localStorage.getItem(HANDOFF_KEY); } catch (_) { return; }
+      if (!raw) return;
+      let state;
+      try { state = JSON.parse(raw); } catch (_) { localStorage.removeItem(HANDOFF_KEY); return; }
+      if (!state || !state.minId) { localStorage.removeItem(HANDOFF_KEY); return; }
+      if (Date.now() - (state.handoffAt || 0) > HANDOFF_TTL_MS) {
+        localStorage.removeItem(HANDOFF_KEY);
+        return;
+      }
+      // 状態復元
+      minId = state.minId;
+      partCount = state.partCount || 1;
+      if (state.agenda) document.getElementById('agenda-input-record').value = state.agenda;
+      if (state.meetingType) {
+        const sel = document.getElementById('meeting-type-select');
+        sel.value = state.meetingType;
+        if (typeof updateTheme === 'function') updateTheme(state.meetingType);
+      }
+      // ファイル表示・リンク復元
+      setMeetingFiles({
+        minutesId: state.minId,
+        minutesName: state.minutesName || '（引き継ぎ）',
+        minutesUrl: state.minutesUrl || '#'
+      });
+      log(`✅ 引き継ぎ完了: Part ${partCount} から録音を再開できます。「録音開始」を押してください。`, 'success');
+      // 使用済み handoff は削除（重複適用防止）
+      localStorage.removeItem(HANDOFF_KEY);
+    }
+
+    // ============================================================
+    //  テーマ管理
+    // ============================================================
+    function updateTheme(type) {
+      document.body.className = '';
+      const clContainer = document.getElementById('checklist-container');
+      if (clContainer) clContainer.style.display = 'none';
+
+      if (type === 'store_manager') {
+        document.body.classList.add('theme-store');
+        updateAppTitle('🔴 【店長会議】スグロク');
+      } else if (type === 'division') {
+        document.body.classList.add('theme-division');
+        updateAppTitle('⚠️ 【店舗事業部会議】スグロク');
+      } else if (type === 'department') {
+        document.body.classList.add('theme-department');
+        updateAppTitle('🟠 【部門担当者会議】スグロク');
+      } else if (type === 'general') {
+        document.body.classList.add('theme-general');
+        updateAppTitle('🔵 【汎用打合せ/報告書】スグロク');
+        if (clContainer) clContainer.style.display = 'block';
+      }
+
+      const descEl = document.getElementById('analysis-description');
+      if (descEl) {
+        const msgs = {
+          store_manager: '店長会議向けに「実行」と「期限」を厳しくチェックします。',
+          division:      '店舗事業部会議向けに「経営視点」で厳しくチェックします。',
+          department:    '部門担当者会議向けに「具体的アクション」をチェックします。',
+          general:       '汎用会議として「決定事項の明確化」をチェックします。'
+        };
+        descEl.innerHTML = msgs[type] || '';
+      }
+    }
+
+    function updateAppTitle(text) {
+      const el = document.getElementById('app-title');
+      if (el) el.innerText = text;
+    }
+
+    // ============================================================
+    //  DOMContentLoaded: ログイン画面を初期化
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      // テーマ初期化（ログイン前でも設定）
+      updateTheme('store_manager');
+      setupMobileRefreshGuard();
+
+      // Google Sign-In ボタンを描画
+      // ※ GIS スクリプトがロードされてから実行する必要があるため
+      //   スクリプトの async/defer に合わせて少し待つ
+      const tryRender = (retries = 10) => {
+        if (window.google && google.accounts && google.accounts.id) {
+          google.accounts.id.initialize({
+            client_id:   CONFIG.GOOGLE_CLIENT_ID,
+            callback:    handleCredentialResponse,
+            auto_select: false
+          });
+          google.accounts.id.renderButton(
+            document.getElementById('google-signin-btn'),
+            { theme: 'outline', size: 'large', text: 'signin_with', locale: 'ja', width: 280 }
+          );
+        } else if (retries > 0) {
+          setTimeout(() => tryRender(retries - 1), 300);
+        }
+      };
+      tryRender();
+
+      // イベントリスナー登録（ログイン後に使う）
+      initEventListeners();
+    });
+
+    function initEventListeners() {
+      const createBtn  = document.getElementById('createBtn');
+      if (createBtn)  createBtn.onclick  = triggerCreateNew;
+
+      const resumeBtn  = document.getElementById('resumeBtn');
+      if (resumeBtn)  resumeBtn.onclick  = handleResumeClick;
+
+      const startBtn   = document.getElementById('startBtn');
+      if (startBtn)   startBtn.onclick   = startRecording;
+
+      const splitBtn   = document.getElementById('splitBtn');
+      if (splitBtn)   splitBtn.onclick   = triggerSplit;
+
+      const stopBtn    = document.getElementById('stopBtn');
+      if (stopBtn)    stopBtn.onclick    = stopRecording;
+
+      // v3.0.0 追加ボタン
+      const pauseBtn   = document.getElementById('pauseBtn');
+      if (pauseBtn)   pauseBtn.onclick   = triggerPause;
+
+      const breakBtn   = document.getElementById('breakBtn');
+      if (breakBtn)   breakBtn.onclick   = triggerBreak;
+
+      const recResumeBtn = document.getElementById('recResumeBtn');
+      if (recResumeBtn) recResumeBtn.onclick = triggerResume;
+
+      const restartBtn = document.getElementById('restartBtn');
+      if (restartBtn) restartBtn.onclick = triggerRestart;
+
+      const stopBtnPaused  = document.getElementById('stopBtnPaused');
+      if (stopBtnPaused)  stopBtnPaused.onclick  = stopRecording;
+
+      const stopBtnWaiting = document.getElementById('stopBtnWaiting');
+      if (stopBtnWaiting) stopBtnWaiting.onclick = stopRecording;
+
+      const handoffBtn = document.getElementById('handoffBtn');
+      if (handoffBtn) handoffBtn.onclick = handleHandoff;
+
+      const analyzeBtn = document.getElementById('analyzeBtn');
+      if (analyzeBtn) analyzeBtn.onclick = runAnalysis;
+
+      const openManualBtn = document.getElementById('openManualBtn');
+      if (openManualBtn) openManualBtn.onclick = openManualInNewPage;
+
+      // 次第ファイルローダーを両モードに設定
+      setupAgendaLoader('agenda-file-record',  'agenda-status-record',  'agenda-input-record');
+      setupAgendaLoader('agenda-file-analyze', 'agenda-status-analyze', 'agenda-input-analyze');
+    }
+
+    // ============================================================
+    //  イベントハンドラ
+    // ============================================================
+    async function handleResumeClick() {
+      showLoading('直近のファイルを検索中...');
+      try {
+        const res = await callGAS('getRecentMinuteDocs');
+        hideLoading();
+        if (Array.isArray(res) && res.length > 0) {
+          if (res.length === 1) {
+            if (confirm(`以下のファイルから再開しますか？\n\n${res[0].minutesName}`)) {
+              setMeetingFiles(res[0]);
+              log('記録を再開しました', 'success');
+            }
+          } else {
+            showFileSelectionModal(res);
+          }
+        } else {
+          showLoading('直近のファイルが見つかりませんでした。新規作成します...');
+          triggerCreateNew();
+        }
+      } catch (err) {
+        hideLoading();
+        alert('再開エラー: ' + err.message);
+      }
+    }
+
+    // ============================================================
+    //  v3.0.0: 状態マシン遷移ヘルパー
+    // ============================================================
+    function setRecState_(next) {
+      recState = next;
+      const badge = document.getElementById('state-badge');
+      const groups = {
+        IDLE:     'btn-group-idle',
+        RECORDING:'btn-group-recording',
+        PAUSED:   'btn-group-paused',
+        WAITING:  'btn-group-waiting',
+        FINISHED: 'btn-group-idle'
+      };
+      ['btn-group-idle','btn-group-recording','btn-group-paused','btn-group-waiting'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = (id === groups[next]) ? '' : 'none';
+      });
+      const labels = {
+        IDLE:'待機中', RECORDING:'🔴 録音中', PAUSED:'⏸ 一時停止中', WAITING:'☕ 休憩中', FINISHED:'完了'
+      };
+      const classes = {
+        IDLE:'state-idle', RECORDING:'state-recording', PAUSED:'state-paused', WAITING:'state-waiting', FINISHED:'state-idle'
+      };
+      if (badge) {
+        badge.textContent = labels[next] || next;
+        badge.className = 'state-badge ' + (classes[next] || 'state-idle');
+      }
+      document.getElementById('pause-info').style.display = (next === 'PAUSED') ? '' : 'none';
+      document.getElementById('break-info').style.display = (next === 'WAITING') ? '' : 'none';
+      const statusPanel = document.getElementById('job-status-panel');
+      if (statusPanel) {
+        statusPanel.classList.toggle('visible', next !== 'IDLE' && next !== 'FINISHED');
+      }
+    }
+
+    async function startRecording() {
+      if (!minId) return alert('先にファイルを作成してください');
+
+      try {
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (e) {
+        alert('マイクアクセスに失敗しました: ' + e.message);
+        return;
+      }
+
+      audioChunks = [];
+      mediaRecorder = createRecorder(micStream);
+      mediaRecorder.start();
+
+      recStartAt = Date.now();
+      accumulatedPauseMs = 0;
+      autoSplitRemainingMs = AUTO_SEND_MS;
+
+      startTimer();
+      setRecState_(REC_STATE.RECORDING);
+      log(`録音開始 (Part ${partCount})`, 'success');
+      showRecBanner();
+
+      autoSplitTimer = setTimeout(() => { log('自動分割送信'); triggerSplit(); }, AUTO_SEND_MS);
+
+      // ジョブステータスポーリング開始
+      startStatusPolling_();
+    }
+
+    function stopRecording() {
+      // 終了ボタン: どの状態からでも終了へ遷移
+      stopIntent = 'stop';
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      } else {
+        // すでに停止済み（WAITING等）→ 直接 finalize
+        finalizeNow_();
+      }
+    }
+
+    // ♻️ 区切る: chunk送信して同Part内で継続録音
+    function triggerSplit() {
+      if (recState !== REC_STATE.RECORDING) return;
+      stopIntent = 'continue';
+      clearTimeout(autoSplitTimer);
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+    }
+
+    // 📥 区切って休憩: chunk送信して WAITING へ遷移（マイク解放）
+    function triggerBreak() {
+      if (recState !== REC_STATE.RECORDING) return;
+      stopIntent = 'break';
+      clearTimeout(autoSplitTimer);
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+    }
+
+    // ⏸ 一時停止: MediaRecorder.pause、タイマー凍結
+    function triggerPause() {
+      if (recState !== REC_STATE.RECORDING) return;
+      if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
+      mediaRecorder.pause();
+      // autoSplitTimer の残り時間を計算して凍結
+      const elapsed = Date.now() - (autoSplitStartAt || Date.now());
+      autoSplitRemainingMs = Math.max(0, AUTO_SEND_MS - elapsed);
+      clearTimeout(autoSplitTimer);
+      clearInterval(timerInterval);
+
+      pauseStartAt = Date.now();
+      setRecState_(REC_STATE.PAUSED);
+      log('⏸ 一時停止', 'success');
+
+      // 30分上限タイマー: 超過で自動 WAITING へ
+      pauseTimeoutTimer = setTimeout(() => {
+        log('⏸ 一時停止が30分を超えたため、自動で「区切って休憩」モードへ切り替えます', 'error');
+        triggerAutoBreakFromPause_();
+      }, MAX_PAUSE_MS);
+    }
+
+    // ▶️ 再開: PAUSED → RECORDING
+    function triggerResume() {
+      if (recState !== REC_STATE.PAUSED) return;
+      if (!mediaRecorder || mediaRecorder.state !== 'paused') return;
+      clearTimeout(pauseTimeoutTimer);
+      pauseTimeoutTimer = null;
+
+      // 累積一時停止時間を加算
+      if (pauseStartAt) {
+        accumulatedPauseMs += (Date.now() - pauseStartAt);
+        pauseStartAt = null;
+      }
+
+      mediaRecorder.resume();
+      startTimer();
+      setRecState_(REC_STATE.RECORDING);
+      log('▶️ 録音再開', 'success');
+
+      // 凍結した残り時間で autoSplitTimer を再設定
+      autoSplitStartAt = Date.now();
+      autoSplitTimer = setTimeout(() => { log('自動分割送信'); triggerSplit(); }, autoSplitRemainingMs);
+    }
+
+    // PAUSED → 自動で break 発動（30分超過時）
+    function triggerAutoBreakFromPause_() {
+      if (recState !== REC_STATE.PAUSED) return;
+      if (!mediaRecorder) return;
+      stopIntent = 'break';
+      clearTimeout(pauseTimeoutTimer);
+      pauseTimeoutTimer = null;
+      // paused → resume してから stop（stopはpaused状態からでも発火するが、onstopイベント確実性のため）
+      if (mediaRecorder.state === 'paused') {
+        try { mediaRecorder.resume(); } catch (_) {}
+      }
+      if (mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+    }
+
+    // 🔴 録音再開（WAITING → RECORDING、新Part開始）
+    async function triggerRestart() {
+      if (recState !== REC_STATE.WAITING) return;
+      partCount++;
+      await startRecording();
+    }
+
+    // 録音状態チェック（互換用: beforeunload等で使用）
+    function isRecording() {
+      return recState === REC_STATE.RECORDING || recState === REC_STATE.PAUSED;
+    }
+
+    let autoSplitStartAt = null;
+
+    // 録音中バナー表示／非表示
+    function showRecBanner() {
+      document.getElementById('rec-warning-banner').style.display = 'block';
+      // バナー分のスペースを確保
+      const mainApp = document.getElementById('main-app');
+      if (mainApp) mainApp.style.paddingTop = '44px';
+    }
+    function hideRecBanner() {
+      document.getElementById('rec-warning-banner').style.display = 'none';
+      const mainApp = document.getElementById('main-app');
+      if (mainApp) mainApp.style.paddingTop = '0';
+    }
+
+    // ① 録音中の誤閉じ防止（ブラウザ標準ダイアログを表示）
+    window.addEventListener('beforeunload', (e) => {
+      if (isRecording()) {
+        e.preventDefault();
+        // モダンブラウザは独自メッセージを無視して標準文を表示するが念のため設定
+        e.returnValue = '⚠️ 録音中です！閉じると直前の録音データが失われます。';
+        return e.returnValue;
+      }
+    });
+
+    // ② ページが閉じられた場合 → sendBeacon でfinalizeSummaryを送信
+    //    （既に送信済みの音声チャンク分だけでも要約を実行する）
+    window.addEventListener('pagehide', () => {
+      if (!minId || !currentIdToken) return;
+      if (!isRecording()) return;
+      const body = JSON.stringify({
+        action:      'finalizeSummary',
+        idToken:     currentIdToken,
+        targetDocId: minId
+      });
+      // sendBeacon はページアンロード後も確実に送信される
+      navigator.sendBeacon(
+        CONFIG.GAS_URL,
+        new Blob([body], { type: 'text/plain;charset=UTF-8' })
+      );
+    });
+
+    // ============================================================
+    //  起動時復旧: 前回セッションの未送信 chunk をドレイン
+    //  IndexedDB は原則ブラウザ／オリジン単位で永続化されるため、
+    //  タブを閉じてしまった後の再ログインでも、前回の pending chunk を
+    //  検出してサーバー送信を試みる。
+    // ============================================================
+    async function checkAndRecoverPendingChunks_() {
+      let pending = [];
+      try {
+        pending = await idbGetByState_('pending');
+      } catch (e) {
+        console.warn('IDB check failed', e);
+        return;
+      }
+      if (!pending || pending.length === 0) return;
+
+      // docId ごとに件数集計
+      const byDoc = {};
+      pending.forEach(r => {
+        byDoc[r.docId] = (byDoc[r.docId] || 0) + 1;
+      });
+      const docSummary = Object.entries(byDoc)
+        .map(([d, n]) => `・${d.slice(0,8)}... (${n}件)`)
+        .join('\n');
+
+      const msg =
+        `⚠️ 前回の未送信音声データが ${pending.length} 件残っています。\n` +
+        `${docSummary}\n\n` +
+        `今すぐサーバーへ再送信しますか？\n` +
+        `（「キャンセル」を選ぶと次回以降に持ち越されます。\n` +
+        ` 録音を新規開始すると自動的に再送信が試行されます）`;
+
+      if (!window.confirm(msg)) {
+        log(`ℹ️ 未送信 ${pending.length} 件は次回に持ち越されました`);
+        return;
+      }
+
+      log(`🔄 未送信 ${pending.length} 件の再送信を開始します...`);
+      const r = await drainPendingQueue_();
+      log(
+        `✅ 再送信完了: 成功 ${r.drained} / 失敗 ${r.failed}`,
+        r.failed > 0 ? 'error' : 'success'
+      );
+      if (r.failed > 0) {
+        log(`⚠️ 失敗した ${r.failed} 件は IndexedDB に残るため、次回ドレインで再試行されます`, 'error');
+      }
+    }
+
+    // ============================================================
+    //  handleStop: MediaRecorder.onstop のハンドラ（状態マシン分岐）
+    // ============================================================
+    async function handleStop() {
+      clearInterval(timerInterval);
+      clearTimeout(autoSplitTimer);
+
+      const intent = stopIntent || 'continue';
+      stopIntent = null;
+
+      // 音声データ取り出し
+      const blob = new Blob(audioChunks, { type: 'audio/webm' });
+      audioChunks = [];
+
+      const p = partCount;
+      const agenda = document.getElementById('agenda-input-record').value;
+
+      // blob が空なら送信スキップ（ほぼ無録音で停止したケース）
+      if (blob.size === 0) {
+        log(`Part ${p} 空のため送信スキップ`, 'error');
+      } else {
+        // chunk_id 発行 → IndexedDB に保存 → ドレインを試行
+        const chunkId = generateChunkId_();
+        try {
+          const base64 = await blobToBase64_(blob);
+          const record = {
+            chunkId:     chunkId,
+            docId:       minId,
+            partNum:     p,
+            mimeType:    blob.type,
+            blob:        blob,
+            base64:      base64,
+            agendaText:  agenda,
+            createdAt:   Date.now(),
+            state:       'pending',
+            attemptCount: 0,
+            lastError:   null
+          };
+          await idbPutChunk_(record);
+          log(`📦 Part ${p} を IndexedDB キューに保存（chunkId=${chunkId.slice(0,8)}...）`);
+          // 即座にドレイン試行（ブロックしない）
+          drainPendingQueue_().then(r => {
+            if (r.failed > 0) log(`⚠️ 送信失敗 ${r.failed} 件（次回自動再送）`, 'error');
+          });
+        } catch (e) {
+          log(`❌ Part ${p} IndexedDB保存失敗: ${e.message}`, 'error');
+        }
+      }
+
+      // ---- 状態マシンに従って遷移 ----
+      if (intent === 'continue') {
+        // ♻️ 区切る: 新しい Recorder を起動して同じ micStream で継続
+        partCount++;
+        mediaRecorder = createRecorder(micStream);
+        mediaRecorder.start();
+        startTimer();
+        autoSplitStartAt = Date.now();
+        autoSplitRemainingMs = AUTO_SEND_MS;
+        autoSplitTimer = setTimeout(() => { log('自動分割送信'); triggerSplit(); }, AUTO_SEND_MS);
+        setRecState_(REC_STATE.RECORDING);
+
+      } else if (intent === 'break') {
+        // 📥 区切って休憩: マイク解放、WAITING へ
+        releaseMic_();
+        hideRecBanner();
+        setRecState_(REC_STATE.WAITING);
+        log('☕ 休憩中。再開ボタンで新しい Part として録音を開始できます', 'success');
+
+      } else if (intent === 'stop') {
+        // ⏹ 終了: マイク解放、finalize 実行
+        releaseMic_();
+        hideRecBanner();
+        setRecState_(REC_STATE.FINISHED);
+        log('録音終了');
+        finalizeNow_();
+
+      } else {
+        // 想定外: 安全のため WAITING へ
+        releaseMic_();
+        hideRecBanner();
+        setRecState_(REC_STATE.WAITING);
+      }
+    }
+
+    function releaseMic_() {
+      if (micStream) {
+        micStream.getTracks().forEach(t => t.stop());
+        micStream = null;
+      }
+      if (pauseTimeoutTimer) { clearTimeout(pauseTimeoutTimer); pauseTimeoutTimer = null; }
+      recStartAt = null;
+      pauseStartAt = null;
+    }
+
+    async function finalizeNow_() {
+      // 未送信chunkが残っていたらドレインを試みる
+      const remaining = await idbGetByState_('pending');
+      if (remaining.length > 0) {
+        log(`ℹ️ 未送信 chunk が ${remaining.length} 件あります。送信を試行します...`);
+        await drainPendingQueue_();
+      }
+      log('✨ 最終要約を生成中...');
+      try {
+        const msg = await callGAS('finalizeSummary', { targetDocId: minId });
+        log(`✅ まとめテーブル更新: ${msg}`, 'success');
+      } catch (err) {
+        log(`⚠️ まとめ生成失敗: ${err.message}（後でバックグラウンド再試行される場合があります）`, 'error');
+      }
+      // ステータスポーリングは続行（ワーカーが残chunkを処理中の可能性）
+    }
+
+    // ============================================================
+    //  2系統カウンタ: 会議経過 / 実録音
+    // ============================================================
+    function startTimer() {
+      clearInterval(timerInterval);
+      autoSplitStartAt = Date.now();
+      timerInterval = setInterval(() => {
+        if (!recStartAt) return;
+        // 会議経過 = now - recStartAt
+        const totalMs = Date.now() - recStartAt;
+        // 実録音 = 経過 - 累積一時停止 - 現在の一時停止継続分
+        const currentPauseMs = pauseStartAt ? (Date.now() - pauseStartAt) : 0;
+        const recMs = Math.max(0, totalMs - accumulatedPauseMs - currentPauseMs);
+        const fmt = ms => {
+          const s = Math.floor(ms / 1000);
+          const h = Math.floor(s / 3600);
+          const m = Math.floor((s % 3600) / 60);
+          const sec = s % 60;
+          return (h > 0 ? h + ':' : '') +
+                 String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+        };
+        const stateSfx = recState === REC_STATE.PAUSED ? '/一時停止中' : '';
+        document.getElementById('timer-display').innerText =
+          `経過 ${fmt(totalMs)} / 実録音 ${fmt(recMs)} (Part ${partCount}${stateSfx})`;
+      }, 1000);
+    }
+
+    // ============================================================
+    //  ジョブステータスポーリング
+    // ============================================================
+    function startStatusPolling_() {
+      if (statusPollTimer) return;
+      const poll = async () => {
+        if (!minId) return;
+        try {
+          const res = await callGAS('getJobStatus', { targetDocId: minId });
+          if (res && res.status === 'ok') {
+            document.getElementById('js-pending').textContent = res.pendingForDoc || 0;
+            document.getElementById('js-done').textContent    = res.processedForDoc || 0;
+            document.getElementById('js-failed').textContent  = res.failedForDoc || 0;
+            document.getElementById('js-merge').textContent   = res.mergeCount || 0;
+          }
+        } catch (_) { /* 静かに無視 */ }
+      };
+      poll(); // 即時1回
+      statusPollTimer = setInterval(poll, STATUS_POLL_INTERVAL);
+    }
+    function stopStatusPolling_() {
+      if (statusPollTimer) { clearInterval(statusPollTimer); statusPollTimer = null; }
+    }
+
+    function updateChecklist(data) {
+      if (!data || !data.topics) return;
+      const mapping = {
+        'goal':        'chk-goal',
+        'status':      'chk-status',
+        'proscons':    'chk-proscons',
+        'constraints': 'chk-constraints',
+        'decision':    'chk-decision',
+        'schedule':    'chk-schedule',
+        'deadline':    'chk-deadline',
+        'concrete':    'chk-concrete'
+      };
+      data.topics.forEach(topic => {
+        const id = mapping[topic];
+        if (id) {
+          const el = document.getElementById(id);
+          if (el) {
+            el.checked = true;
+            el.parentElement.style.fontWeight = 'bold';
+            el.parentElement.style.color = '#d35400';
+          }
+        }
+      });
+    }
+  </script>
+</body>
+
+</html>
+
+
+
+
+
+
