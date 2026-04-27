@@ -2120,6 +2120,10 @@
             document.getElementById('js-done').textContent    = res.processedForDoc || 0;
             document.getElementById('js-failed').textContent  = res.failedForDoc || 0;
             document.getElementById('js-merge').textContent   = res.mergeCount || 0;
+            // v3.2.0: 検出済み topics をチェックリストに反映
+            if (Array.isArray(res.topics) && res.topics.length > 0) {
+              updateChecklist({ topics: res.topics });
+            }
           }
         } catch (_) { /* 静かに無視 */ }
       };
