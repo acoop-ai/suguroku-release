@@ -762,7 +762,8 @@
         showLoading('システム準備中... 音声認識AIを起動しています');
 
         try {
-          await requestAccessTokenOnce_({ login_hint: email });
+          // 初回ログイン直後 = 同意ダイアログが必要な場合があるため silent ではなくポップアップ許容
+          await requestAccessTokenOnce_({ login_hint: email, silent: false });
         } catch (e) {
           hideLoading();
           console.error('OAuth2 token acquisition failed:', e);
@@ -813,23 +814,35 @@
       });
     }
 
+    /**
+     * requestAccessTokenOnce_:
+     *  - opts.silent === true  → prompt:'' でサイレント取得（リフレッシュ用）
+     *      ※ 失敗するケース: 未consent / Cookie拒否 / セッション切れ
+     *  - opts.silent !== true  → prompt 省略でブラウザ任せ（必要ならポップアップ）
+     *      ※ 初回ログイン直後・再ログインバナー・consent取り直し時に使う
+     */
     function requestAccessTokenOnce_(opts) {
       return new Promise((resolve, reject) => {
         try {
           ensureOAuthTokenClient_();
         } catch (e) { return reject(e); }
 
+        const isSilent = !!(opts && opts.silent);
+        // サイレント時のみ短いタイムアウトを設定（同意ポップアップ表示中は人間操作待ち）
         let settled = false;
-        const guard = setTimeout(() => {
-          if (settled) return;
-          settled = true;
-          reject(new Error('OAuth2 token acquisition timed out (15s)'));
-        }, 15000);
+        let guard = null;
+        if (isSilent) {
+          guard = setTimeout(() => {
+            if (settled) return;
+            settled = true;
+            reject(new Error('OAuth2 silent token acquisition timed out (10s)'));
+          }, 10000);
+        }
 
         oauthTokenClient.callback = (resp) => {
           if (settled) return;
           settled = true;
-          clearTimeout(guard);
+          if (guard) clearTimeout(guard);
           if (!resp) return reject(new Error('empty oauth2 response'));
           if (resp.error) return reject(new Error(resp.error_description || resp.error));
           if (!resp.access_token) return reject(new Error('no access_token in response'));
@@ -842,14 +855,14 @@
         };
 
         try {
-          // prompt:'' = サイレント。login_hint を渡すとアカウント選択を回避できる
-          const req = { prompt: '' };
+          const req = {};
+          if (isSilent) req.prompt = ''; // サイレント要求
           if (opts && opts.login_hint) req.hint = opts.login_hint;
           oauthTokenClient.requestAccessToken(req);
         } catch (e) {
           if (settled) return;
           settled = true;
-          clearTimeout(guard);
+          if (guard) clearTimeout(guard);
           reject(e);
         }
       });
@@ -864,7 +877,8 @@
       );
       tokenRefreshTimer = setTimeout(async () => {
         try {
-          await requestAccessTokenOnce_({ login_hint: currentUser && currentUser.email });
+          // 自動更新はサイレント（ポップアップは絶対に出さない）
+          await requestAccessTokenOnce_({ login_hint: currentUser && currentUser.email, silent: true });
           if (typeof log === 'function') log('🔄 アクセストークンを自動更新しました', 'normal');
         } catch (e) {
           console.warn('silent token refresh failed:', e);
@@ -886,11 +900,12 @@
         document.body.appendChild(el);
         document.getElementById('relogin-btn').addEventListener('click', async () => {
           try {
-            await requestAccessTokenOnce_({ login_hint: currentUser && currentUser.email });
+            // 再ログインボタンはユーザー操作なのでポップアップ許容
+            await requestAccessTokenOnce_({ login_hint: currentUser && currentUser.email, silent: false });
             if (typeof log === 'function') log('✅ 再ログインしました。未送信データを再送します。', 'success');
             try { checkAndRecoverPendingChunks_(); } catch (_) {}
           } catch (e) {
-            // サイレント失敗時は One Tap UI で再認証を促す
+            // それでも失敗したら One Tap UI で再認証を促す
             try { google.accounts.id.prompt(); } catch (_) {}
           }
         });
@@ -912,7 +927,7 @@
       // v3.1.0: 期限切れ間近ならサイレント更新を試みる
       if (currentAccessToken && accessTokenExpiry && Date.now() > accessTokenExpiry - 60 * 1000) {
         try {
-          await requestAccessTokenOnce_({ login_hint: currentUser && currentUser.email });
+          await requestAccessTokenOnce_({ login_hint: currentUser && currentUser.email, silent: true });
         } catch (e) {
           console.warn('inline token refresh failed; will try with stale token:', e);
         }
@@ -935,7 +950,7 @@
         // 認証エラーの兆候を検知したら一度だけサイレント更新→再送
         if (/認証エラー|auth/i.test(json.error)) {
           try {
-            await requestAccessTokenOnce_({ login_hint: currentUser && currentUser.email });
+            await requestAccessTokenOnce_({ login_hint: currentUser && currentUser.email, silent: true });
           } catch (_) {
             showReloginBanner_();
             throw new Error(json.error);
