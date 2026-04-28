@@ -1189,15 +1189,30 @@
         const r = new FileReader();
         r.onload = async ev => {
           try {
-            const text = await callGAS('parseAgendaFile', {
+            const result = await callGAS('parseAgendaFile', {
               base64Data: ev.target.result.split(',')[1],
               mimeType:   f.type,
               fileName:   f.name
             });
+            // v3.5.0: GAS は { text, structure } を返す（旧 GAS は string）
+            const text = (result && typeof result === 'object' && 'text' in result)
+              ? result.text
+              : (typeof result === 'string' ? result : '');
+            const structure = (result && typeof result === 'object' && result.structure) ? result.structure : null;
+
             document.getElementById(outputId).value = text;
             document.getElementById(statusId).innerText = '✅';
+            // 構造化次第があれば次の createNewMinuteDoc 呼び出し用にデータ属性へ保持
+            const outEl = document.getElementById(outputId);
+            if (structure) {
+              outEl.dataset.agendaStructure = JSON.stringify(structure);
+              const itemCount = (structure.agendaItems || []).length;
+              log(`次第読み取り完了: ${f.name}（議題 ${itemCount} 件を構造化）`, 'success');
+            } else {
+              delete outEl.dataset.agendaStructure;
+              log(`次第読み取り完了: ${f.name}（構造化なし・自由テキストのみ）`, 'success');
+            }
             hideLoading();
-            log(`次第読み取り完了: ${f.name}`, 'success');
           } catch (err) {
             document.getElementById(statusId).innerText = '❌';
             hideLoading();
@@ -1501,12 +1516,20 @@
     async function triggerCreateNew() {
       const btn = document.getElementById('createBtn');
       btn.disabled = true;
-      const agenda      = document.getElementById('agenda-input-record').value;
+      const agendaEl    = document.getElementById('agenda-input-record');
+      const agenda      = agendaEl.value;
       const meetingType = document.getElementById('meeting-type-select').value;
+
+      // v3.5.0: 次第解析時にキャッシュした構造化データを同梱
+      let agendaStructure = null;
+      if (agendaEl.dataset.agendaStructure) {
+        try { agendaStructure = JSON.parse(agendaEl.dataset.agendaStructure); }
+        catch (_) { agendaStructure = null; }
+      }
 
       showLoading('新規議事録を作成中...');
       try {
-        const res = await callGAS('createNewMinuteDoc', { agendaText: agenda, meetingType });
+        const res = await callGAS('createNewMinuteDoc', { agendaText: agenda, meetingType, agendaStructure });
         setMeetingFiles(res);
         btn.innerText = '✅ 作成完了';
         hideLoading();
